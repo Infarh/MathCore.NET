@@ -20,13 +20,17 @@ namespace MathCore.NET.TestConsole
             const string response_string = "Hello World!";
 
             var server = new Server(Port);
+            server.ClientConnected += OnServerOnClientConnected;
+            server.ClientDisconnected += OnServerOnClientDisconnected;
             server.DataReceived += (s, e) =>
             {
-                Console.WriteLine("{0}({1}): {2}", e.Client.Host, e.Client.Port, e.ClientData.Message);
-                e.Client.Send(@$"HTTP/1.1 200 OK
+                Console.WriteLine("From client >> {0}({1}): {2}", e.Client.Host, e.Client.Port, e.ClientData.Message);
+
+                e.Client.Send(
+@$"HTTP/1.1 200 OK
 Date: {DateTime.Now:F} GMT
 Server: SimpleTCP
-X-Powered-By: PHP/5.2.4-2ubuntu5wm1
+X-Powered-By: Infarh
 Last-Modified: {DateTime.Now:F} GMT
 Content-Language: ru
 Content-Type: text/html; charset=utf-8
@@ -36,6 +40,16 @@ Connection: close
 {response_string}");
             };
             server.Start();
+        }
+
+        private static void OnServerOnClientDisconnected(object s, ClientEventArgs e)
+        {
+            Console.WriteLine("Client disconnected: {0}:{1}", e.Client.Host, e.Client.Port);
+        }
+
+        private static void OnServerOnClientConnected(object s, ClientEventArgs e)
+        {
+            Console.WriteLine("Client connected: {0}:{1}", e.Client.Host, e.Client.Port);
         }
     }
 }

@@ -59,7 +59,8 @@ namespace MathCore.NET.TCP
         protected virtual void OnDataReceived(DataEventArgs e) => DataReceived?.Invoke(this, e);
 
         /// <param name="Data">Полученные данные</param>
-        private void OnDataReceived(byte[] Data) => OnDataReceived(new DataEventArgs(Data, _DataEncoding, _DataFormatter));
+        /// <param name="ReadedDataLength">Количество прочитанных байт</param>
+        private void OnDataReceived(byte[] Data, int ReadedDataLength) => OnDataReceived(new DataEventArgs(Data, ReadedDataLength, _DataEncoding, _DataFormatter));
 
         /// <summary>Событие, возникающие при отправке данных</summary>
         public event EventHandler<DataEventArgs> DataSent;
@@ -253,7 +254,8 @@ namespace MathCore.NET.TCP
             catch (SocketException error)
             {
                 Monitor.Exit(_SyncRoot);
-                if (error.ErrorCode == 10061)
+                // ReSharper disable once CommentTypo
+                if (error.ErrorCode == 10061) //WSAECONNREFUSED = 10061
                     OnDisconnected();
                 OnError(error);
                 return;
@@ -333,20 +335,30 @@ namespace MathCore.NET.TCP
 
         protected async void CheckConnectionAsync(CancellationToken Cancel)
         {
-            try
+            if (_ClientStream.CanRead)
             {
-                while (true)
+                var buffer_size = _Client.ReceiveBufferSize;
+                var buffer = new byte[buffer_size];
+                do
                 {
-                    Cancel.ThrowIfCancellationRequested();
-                    var buffer_length = _Client.Available;
-                    if (buffer_length == 0) break;
-                    var buffer = new byte[buffer_length];
-                    await _ClientStream.ReadAsync(buffer, 0, buffer_length, Cancel).ConfigureAwait(false);
-                    OnDataReceived(buffer);
+
+                    if (Cancel.IsCancellationRequested) break;
+                    var available_data = _Client.Available;
+                    var readed_data = 0;
+                    try
+                    {
+                        readed_data = await _ClientStream.ReadAsync(buffer, 0, available_data, Cancel)
+                           .ConfigureAwait(false);
+                    }
+                    catch (OperationCanceledException) { }
+                    catch (IOException error)
+                    {
+                        OnError(error);
+                    }
+                    if (readed_data > 0) OnDataReceived(buffer, readed_data);
                 }
+                while (_ClientStream.DataAvailable);
             }
-            catch (IOException)
-            { }
             Stop();
         }
 
@@ -454,7 +466,8 @@ namespace MathCore.NET.TCP
             Monitor.Enter(_ClientStream);
             try
             {
-                await Task.Run(() => DataFormatter.Serialize(_ClientStream, Object));
+                await Task.Run(() => DataFormatter.Serialize(_ClientStream, Object), Cancel)
+                   .ConfigureAwait(false);
             }
             finally
             {

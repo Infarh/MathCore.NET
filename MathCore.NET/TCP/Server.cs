@@ -248,7 +248,6 @@ namespace MathCore.NET.TCP
             var client = new Client(Client);
 
             //подписываемся на события клиента
-            client.Connected += OnClientConnected;
             client.Disconnected += OnClientDisconnected;
             client.DataReceived += OnClientDataReceived;
             client.Error += OnClientError;
@@ -267,7 +266,6 @@ namespace MathCore.NET.TCP
         protected virtual void DisconnectClient(Client Client)
         {
             //отписываемся от событий клиента
-            Client.Connected -= OnClientConnected;
             Client.Disconnected -= OnClientDisconnected;
             Client.DataReceived -= OnClientDataReceived;
             Client.Error -= OnClientError;
@@ -305,11 +303,6 @@ namespace MathCore.NET.TCP
         /// <param name="Sender">Отключившийся клиент</param>
         /// <param name="Args">Параметры</param>
         private void OnClientDisconnected(object Sender, EventArgs Args) => DisconnectClient((Client)Sender);
-
-        /// <summary>Метод обработки событий подключённых клиентов "при подключении"</summary>
-        /// <param name="Sender">Подключившийся клиент</param>
-        /// <param name="Args">Параметры</param>
-        private void OnClientConnected(object Sender, EventArgs Args) => OnClientConnected((Client)Sender);
 
         #endregion
 
