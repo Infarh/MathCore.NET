@@ -258,6 +258,9 @@ namespace MathCore.NET.TCP
 
             //Добавляем клиента в список
             lock (_Clients) _Clients.Add(client);
+
+            client.Start();
+
             OnClientConnected(client);
         }
 

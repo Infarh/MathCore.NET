@@ -2,6 +2,7 @@
 using System.IO;
 using System.Runtime.Serialization;
 using System.Text;
+// ReSharper disable MemberCanBePrivate.Global
 
 namespace MathCore.NET.TCP.Events
 {
@@ -15,7 +16,6 @@ namespace MathCore.NET.TCP.Events
         public byte[] Data { get; }
 
         public Encoding DataEncoding { get; }
-
 
         /// <summary>
         /// Свойство, возвращающее массив строк, генерируемый разделением 
@@ -40,8 +40,8 @@ namespace MathCore.NET.TCP.Events
 
         protected object Deserialize()
         {
-            using (var stream = new MemoryStream(Data))
-                return _DataFormatter.Deserialize(stream);
+            using var stream = DataStream;
+            return _DataFormatter.Deserialize(stream);
         }
 
         /// <inheritdoc />
