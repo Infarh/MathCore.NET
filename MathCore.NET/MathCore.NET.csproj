@@ -5,4 +5,26 @@
     <LangVersion>8</LangVersion>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <Version>0.0.0</Version>
+    <PackageReleaseNotes>Инициализация проекта</PackageReleaseNotes>
+    <IsPackable>true</IsPackable>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <Authors>Shmachilin P.A.</Authors>
+    <PackageProjectUrl>github.com/infarh/mathcore.net</PackageProjectUrl>
+    <RepositoryUrl>github.com/infarh/mathcore.net</RepositoryUrl>
+    <Description>Библиотека инструментов для работы с сетью</Description>
+    <PackageTags>Network</PackageTags>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>MathCore.NET.Sign.snk</AssemblyOriginatorKeyFile>
+    <Copyright>shmachilin@gmail.com</Copyright>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DocumentationFile>MathCore.NET.xml</DocumentationFile>
+  </PropertyGroup>
+
 </Project>
