@@ -1,0 +1,290 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>MathCore.NET</name>
+    </assembly>
+    <members>
+        <member name="E:MathCore.NET.TCP.Client.Connected">
+            <summary>Событие соединения клиента с сервером</summary>
+        </member>
+        <member name="M:MathCore.NET.TCP.Client.OnConnected">
+            <summary>Позволяет легко вызвать событие "при присоединении"</summary>
+        </member>
+        <member name="E:MathCore.NET.TCP.Client.Disconnected">
+            <summary>Событие, возникающие при потери связи</summary>
+        </member>
+        <member name="E:MathCore.NET.TCP.Client.Error">
+            <summary>Событие, возникающие при ошибке</summary>
+        </member>
+        <member name="M:MathCore.NET.TCP.Client.OnError(System.Exception)">
+            <param name="Error">Возникшая ошибка</param>
+        </member>
+        <member name="E:MathCore.NET.TCP.Client.DataReceived">
+            <summary>Событие, возникающие при появлении данных в сетевом потоке</summary>
+        </member>
+        <member name="M:MathCore.NET.TCP.Client.OnReceiveData(System.Byte[])">
+            <param name="Data">Полученные данные</param>
+        </member>
+        <member name="E:MathCore.NET.TCP.Client.DataSended">
+            <summary>Событие, возникающие при отправке данных</summary>
+        </member>
+        <member name="F:MathCore.NET.TCP.Client.ClientStream">
+            <summary>Сетевой поток данных</summary>
+        </member>
+        <member name="F:MathCore.NET.TCP.Client._Host">
+            <summary>Строка с именем удалённого Host'а</summary>
+        </member>
+        <member name="F:MathCore.NET.TCP.Client._Port">
+            <summary>Переменная целого типа, указывающий удалённый порт</summary>
+            <remarks>В интерфейс класса не входит</remarks>
+        </member>
+        <member name="P:MathCore.NET.TCP.Client.Enabled">
+            <summary>Свойство клиента, отражающее его статус</summary>
+        </member>
+        <member name="P:MathCore.NET.TCP.Client.Host">
+            <summary>Удалённый Host</summary>
+            <remarks>Можно изменять во время работы слиента. Клиент отключится от сервера, изменит настройку и попытается переподключиться к указанному Host'у</remarks>
+            <value>Имеет строковый тип. Может быть указан в виде IP адреса.</value>
+        </member>
+        <member name="P:MathCore.NET.TCP.Client.Port">
+            <summary>Удалённый порт</summary>
+            <remarks>
+            В случае задания недопустимого значения будет сгенерировано исключение
+            Может быть изменено во время работы клиента. Клиент отключиться от сервера, изменит настройку и попытается установить соединение с новым сервером.
+            </remarks>
+            <value>принимает значения целого типа в пределах от 1 до 2^16</value>
+        </member>
+        <member name="M:MathCore.NET.TCP.Client.#ctor">
+            <remarks>
+            Предполагается, что все необходимые параметры будут заданы во время работы с созданным объектом.
+            Изначальные значения
+            Host = "127.0.0.1"
+            Port = 8080
+            </remarks>
+        </member>
+        <member name="M:MathCore.NET.TCP.Client.#ctor(System.String,System.Int32)">
+            <param name="Host">Адрес удалённого сервера</param>
+            <param name="Port">Порт</param>
+        </member>
+        <member name="M:MathCore.NET.TCP.Client.#ctor(System.String,System.Int32,System.Boolean)">
+            <summary>
+            Конструктор клиента по указанному адресу сервера, порту и состоянию клиента после его создания.
+            </summary>
+            <param name="Host">Адрес удалённого сервера</param>
+            <param name="Port">Порт</param>
+            <param name="Enabel">Состояние подключения после создания. True - клиент будет запущен непосредственно по завершении работы конструктора</param>
+        </member>
+        <member name="M:MathCore.NET.TCP.Client.#ctor(System.Net.Sockets.TcpClient)">
+            <summary>Конструктор клиента по указанному объекту типа TcpClient</summary>
+            <remarks>Нужен для использования в серверной части</remarks>
+            <param name="Client">Объект класса TcpClient</param>
+        </member>
+        <member name="M:MathCore.NET.TCP.Client.Connect(System.String,System.Int32)">
+            <summary>Метод установления соединения у удалённым сервером</summary>
+            <param name="Host">Адрес удалённого сервера</param>
+            <param name="Port">Порт</param>
+        </member>
+        <member name="M:MathCore.NET.TCP.Client.Start">
+            <summary>Метод запуска клиента</summary>
+        </member>
+        <member name="M:MathCore.NET.TCP.Client.Stop">
+            <summary>Метод остановки клиента</summary>
+        </member>
+        <member name="M:MathCore.NET.TCP.Client.DisconnectionComplicate(System.IAsyncResult)">
+            <summary>Метод асинхронного завершения процесса отключения от сервера</summary>
+        </member>
+        <member name="M:MathCore.NET.TCP.Client.CheckConnection">
+            <summary>Главный метод клиента. Стартует в отдельном потоке. Проверяет наличие данных от сервера и связь с ним.</summary>
+        </member>
+        <member name="M:MathCore.NET.TCP.Client.Send(System.String)">
+            <summary>
+            Метод отправки данных на сервер
+            </summary>
+            <param name="Message">Отправляемые данные</param>
+        </member>
+        <member name="M:MathCore.NET.TCP.Client.Dispose">
+            <inheritdoc />
+        </member>
+        <member name="F:MathCore.NET.TCP.Client._Disposed">
+            <summary>Признак того, что объект был разрушен</summary>
+        </member>
+        <member name="M:MathCore.NET.TCP.Client.Dispose(System.Boolean)">
+            <summary>Освобождение ресурсов</summary>
+            <param name="disposing">Выполнить освобождение управляемых ресурсов</param>
+        </member>
+        <member name="T:MathCore.NET.TCP.Events.DataEventArgs">
+            <summary>Параметры передачи данных</summary>
+            <remarks>Содержит данные в виде массива символов.</remarks>
+        </member>
+        <member name="P:MathCore.NET.TCP.Events.DataEventArgs.Data">
+            <summary>Данные в виде массива байт</summary>
+        </member>
+        <member name="P:MathCore.NET.TCP.Events.DataEventArgs.Message">
+            <summary>
+            Свойство, возвращающее массив строк, генерируемый разделением 
+            исходных данные, используя в качестве разделителя символ конца строки
+            </summary>
+        </member>
+        <member name="M:MathCore.NET.TCP.Events.DataEventArgs.#ctor(System.Byte[],System.Text.Encoding,System.Runtime.Serialization.IFormatter)">
+            <summary>Конструктор из символьного массива</summary>
+            <param name="Data">Данные</param>
+            <param name="DataEncoding">Кодировка текста</param>
+            <param name="DataFormatter">Объект десериализации</param>
+        </member>
+        <member name="M:MathCore.NET.TCP.Events.DataEventArgs.ToString">
+            <inheritdoc />
+        </member>
+        <member name="T:MathCore.NET.TCP.Events.ClientEventArgs">
+            <summary>Параметры события работы с клиентом</summary>
+        </member>
+        <member name="P:MathCore.NET.TCP.Events.ClientEventArgs.Client">
+            <summary>Клиент</summary>
+        </member>
+        <member name="M:MathCore.NET.TCP.Events.ClientEventArgs.#ctor(MathCore.NET.TCP.Client)">
+            <summary>Инициализация нового экземпляра <see cref="T:MathCore.NET.TCP.Events.ClientEventArgs"/></summary>
+            <param name="Client">Клиент</param>
+        </member>
+        <member name="E:MathCore.NET.TCP.Server.Started">
+            <summary>Событие, возникающие при запуске сервера</summary>
+        </member>
+        <member name="M:MathCore.NET.TCP.Server.OnStarted(System.EventArgs)">
+            <summary>Метод вызова события "при запуске сервера"</summary>
+        </member>
+        <member name="E:MathCore.NET.TCP.Server.Stoped">
+            <summary>Событие, возникающие при остановке сервера</summary>
+        </member>
+        <member name="M:MathCore.NET.TCP.Server.OnStoped(System.EventArgs)">
+            <summary>Метод вызова события "при остановке сервера"</summary>
+        </member>
+        <member name="E:MathCore.NET.TCP.Server.ClientConnected">
+            <summary>Событие, возникающие при подключении нового клиента</summary>
+        </member>
+        <member name="M:MathCore.NET.TCP.Server.OnClientConnected(MathCore.NET.TCP.Events.ClientEventArgs)">
+            <summary>Метод вызова события "при подключении клиента"</summary>
+            <param name="e">Подключившийся клиент</param>
+        </member>
+        <member name="E:MathCore.NET.TCP.Server.ClientDisconnected">
+            <summary>Событие, возникающие при отключении клиента</summary>
+        </member>
+        <member name="M:MathCore.NET.TCP.Server.OnClientDisconnected(MathCore.NET.TCP.Events.ClientEventArgs)">
+            <summary>Метод вызова события "при отключении клиента"</summary>
+            <param name="e">Отключившийся клиент</param>
+        </member>
+        <member name="E:MathCore.NET.TCP.Server.DataReceived">
+            <summary>Событие, возникающие при получении данных подключённым клиентом</summary>
+        </member>
+        <member name="M:MathCore.NET.TCP.Server.OnDataReceived(MathCore.NET.TCP.Events.ClientDataEventArgs)">
+            <summary>Метод вызова события "при получении данных"</summary>
+        </member>
+        <member name="M:MathCore.NET.TCP.Server.OnDataReceived(System.Object,MathCore.NET.TCP.Events.DataEventArgs)">
+            <param name="Sender">Клиент, получивший данные</param>
+            <param name="ClientArgs">Полученные данные (надо переписать, поменяв на полученный от клиента аргумент соответствующего события)</param>
+        </member>
+        <member name="E:MathCore.NET.TCP.Server.DataSended">
+            <summary>Событие, возникающие при отправке данных подключённым клиентом</summary>
+        </member>
+        <member name="M:MathCore.NET.TCP.Server.InvokeDataSendEvent(MathCore.NET.TCP.Events.ClientDataEventArgs)">
+            <summary>Метод вызова события "при передаче данных"</summary>
+        </member>
+        <member name="M:MathCore.NET.TCP.Server.InvokeDataSendEvent(System.Object,MathCore.NET.TCP.Events.DataEventArgs)">
+            <param name="Sender">Клиент, инициировавший передачу</param>
+            <param name="ClientArgs">Параметры передачи</param>
+        </member>
+        <member name="E:MathCore.NET.TCP.Server.Error">
+            <summary>Событие, возникающие при возникновении ошибки</summary>
+        </member>
+        <member name="M:MathCore.NET.TCP.Server.InvokeErrorEvent(System.Exception)">
+            <summary>Метод вызова события "при ошибке"</summary>
+            <param name="Error">Возникшая ошибка</param>
+        </member>
+        <member name="F:MathCore.NET.TCP.Server._Port">
+            <summary>Поле, содержащее текущий прослушиваемый порт</summary>
+        </member>
+        <member name="F:MathCore.NET.TCP.Server._AddressType">
+            <summary>Тип прослушиваемых IP адресов</summary>
+        </member>
+        <member name="F:MathCore.NET.TCP.Server._Listner">
+            <summary>Основной элемент сервера, производящий прослушивание порта и подключения входящих клиентов</summary>
+        </member>
+        <member name="F:MathCore.NET.TCP.Server._ServerThread">
+            <summary>Главный поток сервера</summary>
+        </member>
+        <member name="F:MathCore.NET.TCP.Server._Enabled">
+            <summary>Поле, содержащее информацию о активности сервера</summary>
+        </member>
+        <member name="F:MathCore.NET.TCP.Server._ClientConnection">
+            <summary>Mutex синхронизации процесса асинхронного подключения клиентов</summary>
+        </member>
+        <member name="F:MathCore.NET.TCP.Server._ClientList">
+            <summary>Список подключённых клиентов</summary>
+        </member>
+        <member name="P:MathCore.NET.TCP.Server.Enabled">
+            <summary>Свойство отражает состояние сервера</summary>
+            <value>подключён / отключён</value>
+        </member>
+        <member name="P:MathCore.NET.TCP.Server.Port">
+            <summary>Свойство, указывающее прослушиваемый порт</summary>
+            <value>Должно быть целым в пределах от 1 до 2^16</value>
+        </member>
+        <member name="M:MathCore.NET.TCP.Server.#ctor(System.Int32)">
+            <summary>Конструктор с указанием прослушиваемого порта</summary>
+            <param name="Port">Прослушиваемый порт</param>
+        </member>
+        <member name="M:MathCore.NET.TCP.Server.#ctor(System.Int32,System.Net.IPAddress)">
+            <summary>Конструктор с указанием прослушиваемого порта и типа обслуживаемых подсетей</summary>
+            <param name="Port">Прослушиваемый порт</param>
+            <param name="AddressType">Система IP адресов</param>
+        </member>
+        <member name="M:MathCore.NET.TCP.Server.Start">
+            <summary>Метод запуска сервера</summary>
+        </member>
+        <member name="M:MathCore.NET.TCP.Server.Stop">
+            <summary>Метод остановки сервера</summary>
+        </member>
+        <member name="M:MathCore.NET.TCP.Server.Listen">
+            <summary>Главный метод сервера.</summary>
+            <remarks>
+            В нём производиться асинхронная обработка подключений клиентов
+            Стартует в отдельном потоке
+            </remarks>
+        </member>
+        <member name="M:MathCore.NET.TCP.Server.ClientAccepted(System.IAsyncResult)">
+            <summary>Метод асинхронного завершения подлючения клиента</summary>
+        </member>
+        <member name="M:MathCore.NET.TCP.Server.OnClientDataSended(System.Object,MathCore.NET.TCP.Events.DataEventArgs)">
+            <summary>Метод обработки событий подключённых клиентов "при отправке данных"</summary>
+            <param name="Sender">Клиент, отправивший данные</param>
+            <param name="Args">Параметры</param>
+        </member>
+        <member name="M:MathCore.NET.TCP.Server.OnClientError(System.Object,System.IO.ErrorEventArgs)">
+            <summary>Метод обработки событий подключённых клиентов "при ошибке"</summary>
+            <param name="Sender">Клиент, совершивший ошибку</param>
+            <param name="Args">Параметры</param>
+        </member>
+        <member name="M:MathCore.NET.TCP.Server.OnClientDataReceived(System.Object,MathCore.NET.TCP.Events.DataEventArgs)">
+            <summary>Метод обработки событий подключённых клиентов "при получении данных"</summary>
+            <param name="Sender">Клиент, получивший данные</param>
+            <param name="Args">Параметры</param>
+        </member>
+        <member name="M:MathCore.NET.TCP.Server.OnClientDisconnected(System.Object,System.EventArgs)">
+            <summary>Метод обработки событий подключённых клиентов "при отключении"</summary>
+            <param name="Sender">Отключившийся клиент</param>
+            <param name="Args">Параметры</param>
+        </member>
+        <member name="M:MathCore.NET.TCP.Server.OnClientConnected(System.Object,System.EventArgs)">
+            <summary>Метод обработки событий подключённых клиентов "при подключении"</summary>
+            <param name="Sender">Подключившийся клиент</param>
+            <param name="Args">Параметры</param>
+        </member>
+        <member name="M:MathCore.NET.TCP.Server.Dispose">
+            <inheritdoc />
+        </member>
+        <member name="F:MathCore.NET.TCP.Server._Disposed">
+            <summary>Признак того, что объект был разрушен</summary>
+        </member>
+        <member name="M:MathCore.NET.TCP.Server.Dispose(System.Boolean)">
+            <summary>Освобождение ресурсов</summary>
+            <param name="disposing">Выполнить освобождение управляемых ресурсов</param>
+        </member>
+    </members>
+</doc>

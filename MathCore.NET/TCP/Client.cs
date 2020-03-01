@@ -6,6 +6,9 @@ using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using System.Threading;
 using MathCore.NET.TCP.Events;
+// ReSharper disable MemberCanBePrivate.Global
+// ReSharper disable UnusedMember.Global
+// ReSharper disable ClassWithVirtualMembersNeverInherited.Global
 
 namespace MathCore.NET.TCP
 {
@@ -39,26 +42,26 @@ namespace MathCore.NET.TCP
         /// <summary>Событие, возникающие при появлении данных в сетевом потоке</summary>
         public event EventHandler<DataEventArgs> DataReceived;
 
-        protected virtual void OnReceiveData(DataEventArgs e) => DataReceived?.Invoke(this, e);
+        protected virtual void OnDataReceived(DataEventArgs e) => DataReceived?.Invoke(this, e);
 
         /// <param name="Data">Полученные данные</param>
-        private void OnReceiveData(byte[] Data) => OnReceiveData(new DataEventArgs(Data, _DataEncoding, _DataFormatter));
+        private void OnDataReceived(byte[] Data) => OnDataReceived(new DataEventArgs(Data, _DataEncoding, _DataFormatter));
 
         /// <summary>Событие, возникающие при отправке данных</summary>
-        public event EventHandler<DataEventArgs> DataSended;
+        public event EventHandler<DataEventArgs> DataSent;
 
-        protected virtual void OnDataSend(DataEventArgs e) => DataSended?.Invoke(this, e);
-        private void OnDataSend(byte[] Data) => OnDataSend(new DataEventArgs(Data, _DataEncoding, _DataFormatter));
+        protected virtual void OnDataSent(DataEventArgs e) => DataSent?.Invoke(this, e);
+
+        private void OnDataSent(byte[] Data) => OnDataSent(new DataEventArgs(Data, _DataEncoding, _DataFormatter));
 
         #endregion
-
 
         #region Поля
 
         protected TcpClient _Client;
 
         /// <summary>Сетевой поток данных</summary>
-        protected NetworkStream ClientStream;
+        protected NetworkStream _ClientStream;
         protected BinaryReader _Reader;
         protected BinaryWriter _Writer;
 
@@ -84,7 +87,10 @@ namespace MathCore.NET.TCP
         public bool Enabled { get => _Enabled; set { if (value) Start(); else Stop(); } }
 
         /// <summary>Удалённый Host</summary>
-        /// <remarks>Можно изменять во время работы слиента. Клиент отключится от сервера, изменит настройку и попытается переподключиться к указанному Host'у</remarks>
+        /// <remarks>
+        /// Можно изменять во время работы клиента. Клиент отключится от сервера,
+        /// изменит настройку и попытается переподключиться к указанному Host'у
+        /// </remarks>
         /// <value>Имеет строковый тип. Может быть указан в виде IP адреса.</value>
         public string Host
         {
@@ -116,16 +122,16 @@ namespace MathCore.NET.TCP
                 if (value < 1 || value > 65535)
                     throw new ArgumentOutOfRangeException(nameof(value), value, "Порт должен быть в пределах от 1 до 65535, а указан " + value.ToString());
 
-                var whas_enabled = Enabled;
+                var is_enabled = Enabled;
                 Enabled = false;
                 _Port = value;
-                Enabled = whas_enabled;
+                Enabled = is_enabled;
             }
         }
 
         public Encoding DataEncoding { get => _DataEncoding; set => _DataEncoding = value; }
 
-        public NetworkStream SocketStream => ClientStream;
+        public NetworkStream SocketStream => _ClientStream;
 
         public IFormatter DataFormatter
         {
@@ -166,19 +172,23 @@ namespace MathCore.NET.TCP
         }
 
         /// <summary>
-        /// Конструктор клиента по указанному адресу сервера, порту и состоянию клиента после его создания.
+        /// Конструктор клиента по указанному адресу сервера,
+        /// порту и состоянию клиента после его создания.
         /// </summary>
         /// <param name="Host">Адрес удалённого сервера</param>
         /// <param name="Port">Порт</param>
-        /// <param name="Enabel">Состояние подключения после создания. True - клиент будет запущен непосредственно по завершении работы конструктора</param>
-        public Client(string Host, int Port, bool Enabel)
+        /// <param name="Enable">
+        /// Состояние подключения после создания.
+        /// True - клиент будет запущен непосредственно по завершении работы конструктора
+        /// </param>
+        public Client(string Host, int Port, bool Enable)
         {
             //Если значение порта недопустимо, то генерируем исключительную ситуацию
             if (Port < 1 || Port > 65535)
                 throw new ArgumentOutOfRangeException(nameof(Port), Port, $"Порт должен быть в пределах от 1 до 65535, а указан {Port}");
             _Host = Host;
             _Port = Port;
-            if (Enabel) Enabled = true;
+            if (Enable) Enabled = true;
         }
 
         /// <summary>Конструктор клиента по указанному объекту типа TcpClient</summary>
@@ -188,16 +198,17 @@ namespace MathCore.NET.TCP
         {
             _Client = Client;
             _Enabled = true;
-            //проверяем, получен ли от сервера подключённый клиент. Если соединение отсутствует, то возврат
+            //проверяем, получен ли от сервера подключённый клиент.
+            //Если соединение отсутствует, то возврат
             if (!Enabled) return;
 
             //Создаём сетевой поток
-            ClientStream = new NetworkStream(_Client.Client);
+            _ClientStream = new NetworkStream(_Client.Client);
             //ClientStream.ReadTimeout = 250;
             //...объект для чтения данных из потока
-            _Reader = new BinaryReader(ClientStream);
+            _Reader = new BinaryReader(_ClientStream);
             //...объект для записи данных в поток
-            _Writer = new BinaryWriter(ClientStream);
+            _Writer = new BinaryWriter(_ClientStream);
 
             //Выясняем удалённый адрес Host'а
             _Host = _Client.Client.RemoteEndPoint.ToString().Split(':')[0];
@@ -215,18 +226,19 @@ namespace MathCore.NET.TCP
         #region Запуск / остановка
 
         /// <summary>Метод установления соединения у удалённым сервером</summary>
-        /// <param name="Host">Адрес удалённого сервера</param>
+        /// <param name="HostName">Адрес удалённого сервера</param>
         /// <param name="Port">Порт</param>
-        public bool Connect(string Host, int Port)
+        // ReSharper disable once ParameterHidesMember
+        public bool Connect(string HostName, int Port)
         {
             //Если подключение к указанному адресу и порту уже выполнено, то возврат
-            if (_Enabled && Host == _Host && Port == _Port) return true;
+            if (_Enabled && HostName == _Host && Port == _Port) return true;
 
             //В случае, если клиент был подключён, отключаемся
             Enabled = false;
 
             //Устанавливаем новые параметры соединения
-            this.Host = Host;
+            this.Host = HostName;
             this.Port = Port;
 
             //Подключаемся к новой точке
@@ -243,7 +255,7 @@ namespace MathCore.NET.TCP
 
             try
             {
-                //Устанавливаем флаг, свидетельствющий о наличии соединения
+                //Устанавливаем флаг, свидетельствующий о наличии соединения
                 _Enabled = true;
 
                 //Создаём нового клиента
@@ -252,11 +264,11 @@ namespace MathCore.NET.TCP
                 _Client.Connect(_Host, _Port);
 
                 //Получаем сетевой поток
-                ClientStream = _Client.GetStream();
+                _ClientStream = _Client.GetStream();
                 //Создаём объект для чтения из сетевого потока
-                _Reader = new BinaryReader(ClientStream);
+                _Reader = new BinaryReader(_ClientStream);
                 //...и для записи в сетевой поток
-                _Writer = new BinaryWriter(ClientStream);
+                _Writer = new BinaryWriter(_ClientStream);
 
                 //Создаём основной поток клиента
                 _CheckThread = new Thread(CheckConnection);
@@ -311,12 +323,12 @@ namespace MathCore.NET.TCP
                 }
 
                 //Закрываем поток данных
-                ClientStream.Close();
+                _ClientStream.Close();
 
                 _Reader = null;
                 _Writer = null;
 
-                ClientStream = null;
+                _ClientStream = null;
 
                 //Убираем ссылку на клиента
                 _Client = null;
@@ -353,7 +365,7 @@ namespace MathCore.NET.TCP
                     buffer = _Reader.ReadBytes(_Client.Available);
                     @continue = _Client.Available != 0;
                     if (buffer.Length > 0)
-                        OnReceiveData(buffer);
+                        OnDataReceived(buffer);
                 }
             }
             catch (ThreadAbortException)
@@ -361,22 +373,20 @@ namespace MathCore.NET.TCP
             catch (IOException)
             { }
 
-            //После выпадения из цыкла (значит соединение было разорвано) вызываем метод отключения клиента.
-            //Просто так его вызвать нельзя потому, что тогда поток будет ждатье го завершшения, а в это метода
+            //После выпадения из цикла (значит соединение было разорвано) вызываем метод отключения клиента.
+            //Просто так его вызвать нельзя потому, что тогда поток будет ждать его завершения, а в это метода
             //происходит остановка этого потока с его синхронизацией. В итоге происходит мёртвая блокировка.
             //Во избежании этого мы запускаем метод отключения в отдельном потоке, а этот благополучно завершается.
             new Thread(Stop).Start();
 
             //В случае если соединение рвётся на нашей стороне по команде пользователя, то метод отключения уже инициирован, 
-            //но мы его запускаем ещё раз. Это делать можно потому, что поток будет остановлен тем мтодом в момент
+            //но мы его запускаем ещё раз. Это делать можно потому, что поток будет остановлен тем методом в момент
             //когда уже будет сброшен флаг активности клиента и это не позволит повторно войти в метод остановки.
         }
 
         /* ----------------------------------------------------------------------------------------------------------------------------------- */
 
-        /// <summary>
-        /// Метод отправки данных на сервер
-        /// </summary>
+        /// <summary>Метод отправки данных на сервер</summary>
         /// <param name="Message">Отправляемые данные</param>
         public void Send(string Message) => Send(DataEncoding.GetBytes(Message));
 
@@ -385,12 +395,12 @@ namespace MathCore.NET.TCP
             if (!Enabled) return;
             try
             {
-                lock (ClientStream)
+                lock (_ClientStream)
                 {
                     _Writer.Write(Data);
                     _Writer.Flush();
                 }
-                OnDataSend(Data);
+                OnDataSent(Data);
             }
             catch (SocketException error)
             {
@@ -418,7 +428,7 @@ namespace MathCore.NET.TCP
 
         public void SendObject(object Object)
         {
-            lock (ClientStream) DataFormatter.Serialize(ClientStream, Object);
+            lock (_ClientStream) DataFormatter.Serialize(_ClientStream, Object);
         }
 
         #endregion
@@ -448,6 +458,10 @@ namespace MathCore.NET.TCP
             if (_Disposed || !disposing) return;
             _Disposed = true;
             Stop();
+            _Client?.Dispose();
+            _ClientStream?.Dispose();
+            _Reader?.Dispose();
+            _Writer?.Dispose();
         }
 
         #endregion

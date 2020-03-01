@@ -6,6 +6,9 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using MathCore.NET.TCP.Events;
+// ReSharper disable EventNeverSubscribedTo.Global
+// ReSharper disable UnusedType.Global
+// ReSharper disable MemberCanBePrivate.Global
 
 namespace MathCore.NET.TCP
 {
@@ -22,11 +25,11 @@ namespace MathCore.NET.TCP
         private void OnStarted() => OnStarted(EventArgs.Empty);
 
         /// <summary>Событие, возникающие при остановке сервера</summary>
-        public event EventHandler Stoped;
+        public event EventHandler Stopped;
 
         /// <summary>Метод вызова события "при остановке сервера"</summary>
-        protected virtual void OnStoped(EventArgs e) => Stoped?.Invoke(this, e);
-        private void OnStoped() => OnStoped(EventArgs.Empty);
+        protected virtual void OnStopped(EventArgs e) => Stopped?.Invoke(this, e);
+        private void OnStopped() => OnStopped(EventArgs.Empty);
 
         /// <summary>Событие, возникающие при подключении нового клиента</summary>
         public event EventHandler<ClientEventArgs> ClientConnected;
@@ -62,10 +65,10 @@ namespace MathCore.NET.TCP
             OnDataReceived(new ClientDataEventArgs((Client)Sender, ClientArgs));
 
         /// <summary>Событие, возникающие при отправке данных подключённым клиентом</summary>
-        public event EventHandler<ClientDataEventArgs> DataSended;
+        public event EventHandler<ClientDataEventArgs> DataSent;
 
         /// <summary>Метод вызова события "при передаче данных"</summary>
-        protected virtual void InvokeDataSendEvent(ClientDataEventArgs e) => DataSended?.Invoke(this, e);
+        protected virtual void InvokeDataSendEvent(ClientDataEventArgs e) => DataSent?.Invoke(this, e);
 
         /// <param name="Sender">Клиент, инициировавший передачу</param>
         /// <param name="ClientArgs">Параметры передачи</param>
@@ -88,7 +91,6 @@ namespace MathCore.NET.TCP
 
         #endregion
 
-
         #region Поля
 
         private readonly object _SyncRoot = new object();
@@ -102,7 +104,7 @@ namespace MathCore.NET.TCP
         protected readonly IPAddress _AddressType = IPAddress.Any;
 
         /// <summary>Основной элемент сервера, производящий прослушивание порта и подключения входящих клиентов</summary>
-        protected TcpListener _Listner;
+        protected TcpListener _Listener;
 
         /// <summary>Главный поток сервера</summary>
         protected Thread _ServerThread;
@@ -185,8 +187,8 @@ namespace MathCore.NET.TCP
                     _Enabled = true;
 
                     //Создаём новый экземпляр "слушателя"
-                    _Listner = new TcpListener(_AddressType, _Port);
-                    _Listner.Start();
+                    _Listener = new TcpListener(_AddressType, _Port);
+                    _Listener.Start();
                     //Создаём блокирующий объект для синхронизации потоков
                     _ClientConnection = new ManualResetEvent(false);
                     //Создаём список обслуживаемых клиентов
@@ -222,7 +224,7 @@ namespace MathCore.NET.TCP
                         _ClientList[i].Enabled = false;
 
                 //Останавливаем слушателя
-                _Listner.Stop();
+                _Listener.Stop();
                 _ClientConnection?.Set();
 
                 //Если поток всё ещё активен, то...
@@ -236,13 +238,13 @@ namespace MathCore.NET.TCP
 
                 //Обнуляем ссылки
                 _ServerThread = null;
-                _Listner = null;
+                _Listener = null;
                 _ClientConnection = null;
             }
 
             //Устанавливаем признак активности сервера в состояние "отключён"
 
-            OnStoped();
+            OnStopped();
         }
 
         #endregion
@@ -263,7 +265,7 @@ namespace MathCore.NET.TCP
                 {
                     _ClientConnection.Reset();
                     //Асинхронный захват подключения с передачей дальнейшей обработки в метод void ClientAccepted(IAsyncResult AsyncResult)
-                    _Listner.BeginAcceptTcpClient(ClientAccepted, _Listner);
+                    _Listener.BeginAcceptTcpClient(ClientAccepted, _Listener);
                     //Ожидаем флага разрешения дальнейшей работы
                     _ClientConnection.WaitOne();
                 }
@@ -274,7 +276,7 @@ namespace MathCore.NET.TCP
             }
         }
 
-        /// <summary>Метод асинхронного завершения подлючения клиента</summary>
+        /// <summary>Метод асинхронного завершения подключения клиента</summary>
         protected void ClientAccepted(IAsyncResult AsyncResult)
         {
             var listener = (TcpListener)AsyncResult.AsyncState;
@@ -305,7 +307,7 @@ namespace MathCore.NET.TCP
             client.Disconnected += OnClientDisconnected;
             client.DataReceived += OnClientDataReceived;
             client.Error += OnClientError;
-            client.DataSended += OnClientDataSended;
+            client.DataSent += OnClientDataSent;
 
             client.DataEncoding = _DataEncoding;
 
@@ -321,7 +323,7 @@ namespace MathCore.NET.TCP
         /// <summary>Метод обработки событий подключённых клиентов "при отправке данных"</summary>
         /// <param name="Sender">Клиент, отправивший данные</param>
         /// <param name="Args">Параметры</param>
-        private void OnClientDataSended(object Sender, DataEventArgs Args) =>
+        private void OnClientDataSent(object Sender, DataEventArgs Args) =>
             InvokeDataSendEvent(Sender, Args);
 
         /// <summary>Метод обработки событий подключённых клиентов "при ошибке"</summary>
@@ -375,6 +377,7 @@ namespace MathCore.NET.TCP
             if (_Disposed || !disposing) return;
             _Disposed = true;
             Stop();
+            _ClientConnection?.Dispose();
         }
 
         #endregion
