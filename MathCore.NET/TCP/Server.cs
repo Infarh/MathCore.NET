@@ -198,8 +198,12 @@ namespace MathCore.NET.TCP
                     //Останавливаем слушателя
                     _Listener.Stop();
 
-                    _Clients?.ForEach(client => client.Stop());
-                    _Clients?.Clear();
+                    if (_Clients != null)
+                    {
+                        foreach (var client in _Clients.ToArray())
+                            client.Stop();
+                        _Clients.Clear();
+                    }
 
                     //Обнуляем ссылки
                     _Listener = null;

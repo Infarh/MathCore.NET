@@ -1,4 +1,6 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using MathCore.NET.TCP;
@@ -62,7 +64,7 @@ namespace MathCore.NET.Tests.TCP
             const int server_port = 18080;
             const string host = "127.0.0.1";
             using var server = new Server(server_port);
-            
+
             var client_connection = new TaskCompletionSource<Client>();
 
             server.ClientConnected += (s, e) => client_connection.SetResult(e.Client);
@@ -87,6 +89,33 @@ namespace MathCore.NET.Tests.TCP
 
             Assert.That.Value(client.Enabled).IsFalse();
             Assert.That.Value(connected_client.Enabled).IsFalse();
+        }
+
+        [TestMethod]
+        public async Task ReceivingDataFromClient()
+        {
+            const int server_port = 18080;
+            const string host = "127.0.0.1";
+            using var server = new Server(server_port);
+
+            var tcs = new TaskCompletionSource<string>();
+            server.DataReceived += (s, e) => tcs.TrySetResult(e.ClientData.Message);
+
+            var cancellation = new CancellationTokenSource(100);
+            cancellation.Token.Register(() => tcs.TrySetCanceled());
+
+            server.Start();
+
+            var client = new Client(host, server_port);
+            client.Start();
+
+            const string message = "Hello World!";
+
+            client.Send(message);
+
+            var received_message = await tcs.Task.ConfigureAwait(false);
+
+            Assert.That.Value(received_message).IsEqual(message);
         }
     }
 }
