@@ -83,6 +83,8 @@ namespace MathCore.NET.Tests.TCP
 
             client.Stop();
 
+            await Task.Delay(10, CancellationToken.None).ConfigureAwait(false);
+
             Assert.That.Value(client.Enabled).IsFalse();
             Assert.That.Value(connected_client.Enabled).IsFalse();
         }
