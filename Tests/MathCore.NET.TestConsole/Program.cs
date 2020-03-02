@@ -9,6 +9,8 @@ namespace MathCore.NET.TestConsole
 
         static void Main(string[] args)
         {
+            var user = Environment.UserName;
+
             ServerHost.Start(__ServerPort);
             Console.WriteLine("Server started...");
             Console.ReadLine();

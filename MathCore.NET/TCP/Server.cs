@@ -61,34 +61,29 @@ namespace MathCore.NET.TCP
         /// <summary>Метод вызова события "при получении данных"</summary>
         protected virtual void OnDataReceived(ClientDataEventArgs e) => DataReceived?.Invoke(this, e);
 
-        /// <param name="Client">Клиент, получивший данные</param>
-        /// <param name="ClientArgs">Полученные данные (надо переписать, поменяв на полученный от клиента аргумент соответствующего события)</param>
-        private void OnDataReceived(Client Client, DataEventArgs ClientArgs) =>
-            OnDataReceived(new ClientDataEventArgs(Client, ClientArgs));
-
         /// <summary>Событие, возникающие при отправке данных подключённым клиентом</summary>
         public event EventHandler<ClientDataEventArgs> DataSent;
 
         /// <summary>Метод вызова события "при передаче данных"</summary>
-        protected virtual void InvokeDataSendEvent(ClientDataEventArgs e) => DataSent?.Invoke(this, e);
+        protected virtual void OnDataSend(ClientDataEventArgs e) => DataSent?.Invoke(this, e);
 
         /// <param name="Client">Клиент, инициировавший передачу</param>
         /// <param name="ClientArgs">Параметры передачи</param>
-        private void InvokeDataSendEvent(Client Client, DataEventArgs ClientArgs) =>
-            InvokeDataSendEvent(new ClientDataEventArgs(Client, ClientArgs));
+        private void OnDataSend(Client Client, DataEventArgs ClientArgs) =>
+            OnDataSend(new ClientDataEventArgs(Client, ClientArgs));
 
         /// <summary>Событие, возникающие при возникновении ошибки</summary>
         public event EventHandler<ErrorEventArgs> Error;
 
         /// <summary>Метод вызова события "при ошибке"</summary>
-        /// <param name="Error">Возникшая ошибка</param>
-        protected virtual void InvokeErrorEvent(Exception Error)
+        /// <param name="e">Возникшая ошибка</param>
+        protected virtual void OnError(ErrorEventArgs e)
         {
-            var handler = this.Error;
+            var handler = Error;
             if (handler != null)
-                handler.Invoke(this, new ErrorEventArgs(Error));
+                handler.Invoke(this, e);
             else
-                throw Error;
+                throw e.GetException();
         }
 
         #endregion
@@ -157,28 +152,25 @@ namespace MathCore.NET.TCP
             //Если сервер активен, выходим
             if (_Enabled) return;
             lock (_SyncRoot)
-                if (!_Enabled)
+                if (_Enabled) return;
+                else
+                {
+                    _Listener = new TcpListener(_AddressType, _Port);
                     try
                     {
-                        //Устанавливаем признак активности сервера
-                        _Enabled = true;
-
-                        //Создаём новый экземпляр "слушателя"
-                        _Listener = new TcpListener(_AddressType, _Port);
                         _Listener.Start();
-                        //Создаём список обслуживаемых клиентов
-                        _Clients = new List<Client>();
-
-                        _ListenProcessCancellation = new CancellationTokenSource();
-                        ListenAsync(_Listener, _ListenProcessCancellation.Token);
-
                     }
                     catch (SocketException error)
                     {
                         Stop();
-                        InvokeErrorEvent(error);
+                        OnError(new ErrorEventArgs(error));
+                        return;
                     }
-                else return;
+                    _Enabled = true;
+                    _Clients = new List<Client>();
+                    _ListenProcessCancellation = new CancellationTokenSource();
+                    ListenAsync(_Listener, _ListenProcessCancellation.Token);
+                }
             OnStarted();
         }
 
@@ -188,7 +180,8 @@ namespace MathCore.NET.TCP
             //Если сервер неактивен, то выходим
             if (!_Enabled) return;
             lock (_SyncRoot)
-                if (_Enabled)
+                if (!_Enabled) return;
+                else
                 {
                     //Устанавливаем признак активности сервера в состояние "отключён"
                     _Enabled = false;
@@ -201,7 +194,10 @@ namespace MathCore.NET.TCP
                     if (_Clients != null)
                     {
                         foreach (var client in _Clients.ToArray())
+                        {
+                            RemoveEventHandlers(client);
                             client.Stop();
+                        }
                         _Clients.Clear();
                     }
 
@@ -209,8 +205,6 @@ namespace MathCore.NET.TCP
                     _Listener = null;
                     _ListenProcessCancellation = null;
                 }
-                else return;
-
             OnStopped();
         }
 
@@ -239,8 +233,16 @@ namespace MathCore.NET.TCP
             catch (OperationCanceledException) { }
             catch (Exception error)
             {
-                InvokeErrorEvent(error);
+                OnError(new ErrorEventArgs(error));
             }
+        }
+
+        private void AddEventHandlers(Client Client)
+        {
+            Client.Disconnected += OnClientDisconnected;
+            Client.DataReceived += OnClientDataReceived;
+            Client.Error += OnClientError;
+            Client.DataSent += OnClientDataSent;
         }
 
         protected virtual void AcceptClient(TcpClient Client)
@@ -248,11 +250,7 @@ namespace MathCore.NET.TCP
             //Создаём новый экземпляр класса "Client", в котором будет происходить дальнейшая работа с клиентом
             var client = new Client(Client);
 
-            //подписываемся на события клиента
-            client.Disconnected += OnClientDisconnected;
-            client.DataReceived += OnClientDataReceived;
-            client.Error += OnClientError;
-            client.DataSent += OnClientDataSent;
+            AddEventHandlers(client);
 
             client.DataEncoding = _DataEncoding;
 
@@ -264,13 +262,17 @@ namespace MathCore.NET.TCP
             OnClientConnected(client);
         }
 
-        protected virtual void DisconnectClient(Client Client)
+        private void RemoveEventHandlers(Client Client)
         {
-            //отписываемся от событий клиента
             Client.Disconnected -= OnClientDisconnected;
             Client.DataReceived -= OnClientDataReceived;
             Client.Error -= OnClientError;
             Client.DataSent -= OnClientDataSent;
+        }
+
+        protected virtual void DisconnectClient(Client Client)
+        {
+            RemoveEventHandlers(Client);
 
             //Удаляем клиента из списка
             lock (_SyncRoot) _Clients.Remove(Client);
@@ -285,20 +287,19 @@ namespace MathCore.NET.TCP
         /// <param name="Sender">Клиент, отправивший данные</param>
         /// <param name="Args">Параметры</param>
         private void OnClientDataSent(object Sender, DataEventArgs Args) =>
-            InvokeDataSendEvent((Client)Sender, Args);
+            OnDataSend((Client)Sender, Args);
 
         /// <summary>Метод обработки событий подключённых клиентов "при ошибке"</summary>
         /// <param name="Sender">Клиент, совершивший ошибку</param>
         /// <param name="Args">Параметры</param>
         private void OnClientError(object Sender, ErrorEventArgs Args) =>
-            //Передаётся, как ошибка сервера (Не совсем корректно. Надо передавать так же в виде параметра самого виновника ошибки)
-            InvokeErrorEvent(Args.GetException());
+            OnError(new ClientErrorEventArgs((Client)Sender, Args.GetException()));
 
         /// <summary>Метод обработки событий подключённых клиентов "при получении данных"</summary>
         /// <param name="Sender">Клиент, получивший данные</param>
         /// <param name="Args">Параметры</param>
         private void OnClientDataReceived(object Sender, DataEventArgs Args) =>
-            OnDataReceived((Client)Sender, Args);
+            OnDataReceived(new ClientDataEventArgs((Client)Sender, Args));
 
         /// <summary>Метод обработки событий подключённых клиентов "при отключении"</summary>
         /// <param name="Sender">Отключившийся клиент</param>

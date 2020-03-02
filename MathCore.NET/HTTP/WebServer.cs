@@ -11,11 +11,11 @@ namespace MathCore.NET.HTTP
 {
     public class WebServer
     {
-        public static bool AddFirewallRule(int port = 80)
+        public static bool AddFirewallRule(int Port = 80)
         {
             var cmd_info = new ProcessStartInfo(
                     "netsh",
-                    $"advfirewall firewall add rule name=\"Web{port}\" dir=in action=allow protocol=TCP localport={port}")
+                    $"advfirewall firewall add rule name=\"Web{Port}\" dir=in action=allow protocol=TCP localport={Port}")
             {
                 WindowStyle = ProcessWindowStyle.Hidden,
                 CreateNoWindow = true,
@@ -31,11 +31,11 @@ namespace MathCore.NET.HTTP
             return exit_code == 0;
         }
 
-        public static bool RemoveFirewallRule(int port = 80)
+        public static bool RemoveFirewallRule(int Port = 80)
         {
             var cmd_info = new ProcessStartInfo(
                 "netsh",
-                $"advfirewall firewall delete rule name=\"Web{port}\" dir=in protocol=TCP localport={port}")
+                $"advfirewall firewall delete rule name=\"Web{Port}\" dir=in protocol=TCP localport={Port}")
             {
                 WindowStyle = ProcessWindowStyle.Hidden,
                 CreateNoWindow = true,
@@ -44,6 +44,92 @@ namespace MathCore.NET.HTTP
                 UseShellExecute = true
             };
             var process = Process.Start(cmd_info) ?? throw new InvalidOperationException();
+            var exit_code = process.ExitCode;
+            return exit_code == 0;
+        }
+
+        public static bool AddUrlAclRule(int Port = 80, string UserName = null)
+        {
+            var cmd_info = new ProcessStartInfo(
+                "netsh",
+                $"http add urlacl url=http://+:{Port}/ user={UserName ?? Environment.UserName}")
+            {
+                WindowStyle = ProcessWindowStyle.Hidden,
+                CreateNoWindow = true,
+                Verb = "runas",
+                RedirectStandardOutput = true,
+                UseShellExecute = true
+            };
+            var process = new Process { StartInfo = cmd_info };
+            process.Start();
+            //var result = process.StandardOutput.ReadToEnd();
+            process.WaitForExit();
+            var exit_code = process.ExitCode;
+            return exit_code == 0;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="Url">http://+:8080 http://*:8080/Server</param>
+        /// <param name="UserName"></param>
+        /// <returns></returns>
+        public static bool AddUrlAclRule(string Url, string UserName = null)
+        {
+            var cmd_info = new ProcessStartInfo(
+                "netsh",
+                $"http add urlacl url={Url} user={UserName ?? Environment.UserName}")
+            {
+                WindowStyle = ProcessWindowStyle.Hidden,
+                CreateNoWindow = true,
+                Verb = "runas",
+                RedirectStandardOutput = true,
+                UseShellExecute = true
+            };
+            var process = new Process { StartInfo = cmd_info };
+            process.Start();
+            //var result = process.StandardOutput.ReadToEnd();
+            process.WaitForExit();
+            var exit_code = process.ExitCode;
+            return exit_code == 0;
+        }
+
+        public static bool RemoveUrlAclRule(int Port = 80)
+        {
+            var cmd_info = new ProcessStartInfo(
+                "netsh",
+                $"http delete urlacl url=http://+:{Port}/")
+            {
+                WindowStyle = ProcessWindowStyle.Hidden,
+                CreateNoWindow = true,
+                Verb = "runas",
+                RedirectStandardOutput = true,
+                UseShellExecute = true
+            };
+            var process = new Process { StartInfo = cmd_info };
+            process.Start();
+            //var result = process.StandardOutput.ReadToEnd();
+            process.WaitForExit();
+            var exit_code = process.ExitCode;
+            return exit_code == 0;
+        }
+
+        public static bool RemoveUrlAclRule(string Url)
+        {
+            var cmd_info = new ProcessStartInfo(
+                "netsh", 
+                $"http delete urlacl url={Url}")
+            {
+                WindowStyle = ProcessWindowStyle.Hidden,
+                CreateNoWindow = true,
+                Verb = "runas",
+                RedirectStandardOutput = true,
+                UseShellExecute = true
+            };
+            var process = new Process { StartInfo = cmd_info };
+            process.Start();
+            //var result = process.StandardOutput.ReadToEnd();
+            process.WaitForExit();
             var exit_code = process.ExitCode;
             return exit_code == 0;
         }
