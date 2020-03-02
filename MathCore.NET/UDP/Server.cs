@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.Net;
 using System.Net.Sockets;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using MathCore.NET.UDP.Events;
@@ -20,12 +17,20 @@ namespace MathCore.NET.UDP
     /// <summary>Объект прослушивания сетевого UDP порта</summary>
     public class Server : IDisposable
     {
+        public event EventHandler Connected;
+
+        protected virtual void OnConnected(EventArgs e) => Connected?.Invoke(this, e);
+
+        public event EventHandler Disconnected;
+
+        protected virtual void OnDisconnected(EventArgs e) => Disconnected?.Invoke(this, e);
+
         /// <summary>Событие получения данных из сети</summary>
         public event EventHandler<DataReceivedEventArgs> DataReceived;
 
         /// <summary>Генератор события получения данных из сети</summary>
         /// <param name="e">Аргумент события</param>
-        protected virtual void OnDataReceived(DataReceivedEventArgs e) => DataReceived?.BeginInvoke(this, e, null, null);
+        protected virtual void OnDataReceived(DataReceivedEventArgs e) => DataReceived?.Invoke(this, e);
 
         /// <summary>Генератор события получения данных из сети</summary>
         /// <param name="Data">Массив байт, полученный из сети</param>
@@ -82,6 +87,7 @@ namespace MathCore.NET.UDP
                     _ListenProcessCancellation = new CancellationTokenSource();
                     ListenAsync(_Client, _ListenProcessCancellation.Token);
                 }
+            OnConnected(EventArgs.Empty);
         }
 
         /// <summary>Процедура остановки процесса прослушивания порта</summary>
@@ -101,6 +107,7 @@ namespace MathCore.NET.UDP
                     _Client = null;
                     _ListenProcessCancellation = null;
                 }
+            OnDisconnected(EventArgs.Empty);
         }
 
         private async void ListenAsync(UdpClient Client, CancellationToken Cancel)
@@ -111,7 +118,7 @@ namespace MathCore.NET.UDP
             {
                 try
                 {
-                    var receive_data_task = _Client.ReceiveAsync().WithCancellation(Cancel);
+                    var receive_data_task = Client.ReceiveAsync().WithCancellation(Cancel);
 
                     if(buffer != null)
                         OnDataReceived(buffer, address);
@@ -140,6 +147,29 @@ namespace MathCore.NET.UDP
 
             _Client.BeginReceive(_EndReceive, null);
         }
+
+        /* --------------------------------------------------------------------------------------------- */
+
+        public int Send(byte[] Data) => _Client.Send(Data, Data.Length);
+
+        public int Send(byte[] Data, IPEndPoint Address) => _Client.Send(Data, Data.Length, Address);
+
+        public int Send(byte[] Data, string Host, int Port) => _Client.Send(Data, Data.Length, Host, Port);
+
+        public async Task<int> SendAsync(byte[] Data, CancellationToken Cancel = default) => 
+            await _Client.SendAsync(Data, Data.Length)
+               .WithCancellation(Cancel)
+               .ConfigureAwait(false);
+
+        public async Task<int> SendAsync(byte[] Data, IPEndPoint Address, CancellationToken Cancel = default) => 
+            await _Client.SendAsync(Data, Data.Length, Address)
+               .WithCancellation(Cancel)
+               .ConfigureAwait(false);
+
+        public async Task<int> SendAsync(byte[] Data, string Host, int Port, CancellationToken Cancel = default) => 
+            await _Client.SendAsync(Data, Data.Length, Host, Port)
+               .WithCancellation(Cancel)
+               .ConfigureAwait(false);
 
         /* --------------------------------------------------------------------------------------------- */
 

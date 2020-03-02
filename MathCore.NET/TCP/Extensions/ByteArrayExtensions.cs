@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace MathCore.NET.TCP.Extensions
+﻿namespace MathCore.NET.TCP.Extensions
 {
     internal static class ByteArrayExtensions
     {
