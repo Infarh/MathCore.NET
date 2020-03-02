@@ -195,15 +195,13 @@ namespace MathCore.NET.TCP
                     _ListenProcessCancellation.Cancel();
                     _ListenProcessCancellation.Dispose();
 
-                    if (_Clients != null)
-                        foreach (var client in _Clients)
-                            client.Enabled = false;
-
                     //Останавливаем слушателя
                     _Listener.Stop();
 
+                    _Clients?.ForEach(client => client.Stop());
+                    _Clients?.Clear();
+
                     //Обнуляем ссылки
-                    _Clients = null;
                     _Listener = null;
                     _ListenProcessCancellation = null;
                 }
@@ -283,7 +281,7 @@ namespace MathCore.NET.TCP
         /// <param name="Sender">Клиент, отправивший данные</param>
         /// <param name="Args">Параметры</param>
         private void OnClientDataSent(object Sender, DataEventArgs Args) =>
-            InvokeDataSendEvent((Client) Sender, Args);
+            InvokeDataSendEvent((Client)Sender, Args);
 
         /// <summary>Метод обработки событий подключённых клиентов "при ошибке"</summary>
         /// <param name="Sender">Клиент, совершивший ошибку</param>
@@ -296,7 +294,7 @@ namespace MathCore.NET.TCP
         /// <param name="Sender">Клиент, получивший данные</param>
         /// <param name="Args">Параметры</param>
         private void OnClientDataReceived(object Sender, DataEventArgs Args) =>
-            OnDataReceived((Client) Sender, Args);
+            OnDataReceived((Client)Sender, Args);
 
         /// <summary>Метод обработки событий подключённых клиентов "при отключении"</summary>
         /// <param name="Sender">Отключившийся клиент</param>
