@@ -1,6 +1,6 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace MathCore.NET.Tests
+namespace MathCore.NET.Tests.TCP
 {
     [TestClass]
     public class ClientTests
