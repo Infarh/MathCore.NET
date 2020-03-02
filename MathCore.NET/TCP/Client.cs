@@ -88,7 +88,6 @@ namespace MathCore.NET.TCP
         /// <summary>Переменная целого типа, указывающий удалённый порт</summary>
         /// <remarks>В интерфейс класса не входит</remarks>
         protected readonly int _Port = 80;
-        protected Thread _CheckThread;
 
         protected bool _Enabled;
 
@@ -357,7 +356,7 @@ namespace MathCore.NET.TCP
                     }
                     if (readed_data > 0) OnDataReceived(buffer, readed_data);
                 }
-                while (_ClientStream.DataAvailable);
+                while (_ClientStream?.DataAvailable == true);
             }
             Stop();
         }
@@ -379,8 +378,9 @@ namespace MathCore.NET.TCP
             if (!_Enabled) return;
             try
             {
-                lock (_ClientStream)
-                    _ClientStream.Write(Data, 0, Data.Length);
+                var stream = _ClientStream;
+                lock (stream)
+                    stream.Write(Data, 0, Data.Length);
                 OnDataSent(Data);
             }
             catch (SocketException error)
@@ -419,14 +419,15 @@ namespace MathCore.NET.TCP
 
             try
             {
-                Monitor.Enter(_ClientStream);
+                var stream = _ClientStream;
+                Monitor.Enter(stream);
                 try
                 {
-                    await _ClientStream.WriteAsync(Data, 0, Data.Length, cancel).ConfigureAwait(false);
+                    await stream.WriteAsync(Data, 0, Data.Length, cancel).ConfigureAwait(false);
                 }
                 finally
                 {
-                    Monitor.Exit(_ClientStream);
+                    Monitor.Exit(stream);
                 }
                 OnDataSent(Data);
             }
@@ -457,21 +458,23 @@ namespace MathCore.NET.TCP
         public void SendObject(object Object)
         {
             if (Object is null || !_Enabled) return;
-            lock (_ClientStream) DataFormatter.Serialize(_ClientStream, Object);
+            var stream = _ClientStream;
+            lock (stream) DataFormatter.Serialize(stream, Object);
         }
 
         public async Task SendObjectAsync(object Object, CancellationToken Cancel = default)
         {
             if (Object is null || !_Enabled) return;
-            Monitor.Enter(_ClientStream);
+            var stream = _ClientStream;
+            Monitor.Enter(stream);
             try
             {
-                await Task.Run(() => DataFormatter.Serialize(_ClientStream, Object), Cancel)
+                await Task.Run(() => DataFormatter.Serialize(stream, Object), Cancel)
                    .ConfigureAwait(false);
             }
             finally
             {
-                Monitor.Exit(_ClientStream);
+                Monitor.Exit(stream);
             }
         }
 

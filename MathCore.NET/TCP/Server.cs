@@ -255,7 +255,7 @@ namespace MathCore.NET.TCP
             client.DataEncoding = _DataEncoding;
 
             //Добавляем клиента в список
-            lock (_Clients) _Clients.Add(client);
+            lock (_SyncRoot) _Clients.Add(client);
 
             client.Start();
 
@@ -271,7 +271,7 @@ namespace MathCore.NET.TCP
             Client.DataSent -= OnClientDataSent;
 
             //Удаляем клиента из списка
-            lock (_Clients) _Clients.Remove(Client);
+            lock (_SyncRoot) _Clients.Remove(Client);
             OnClientDisconnected(Client);
         }
 
@@ -327,7 +327,7 @@ namespace MathCore.NET.TCP
             _Disposed = true;
             Stop();
             _ListenProcessCancellation?.Dispose();
-            lock (_Clients) _Clients?.Clear();
+            lock (_SyncRoot) _Clients?.Clear();
         }
 
         #endregion

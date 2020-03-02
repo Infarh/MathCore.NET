@@ -11,7 +11,7 @@ namespace MathCore.NET.HTTP
 {
     public abstract class Message : IEnumerable<KeyValuePair<string, string>>
     {
-        private byte[] _Content;
+        //private byte[] _Content;
 
         protected readonly List<KeyValuePair<string, string>> _Headers = new List<KeyValuePair<string, string>>();
 
@@ -85,7 +85,7 @@ namespace MathCore.NET.HTTP
 
         protected void LoadContent(Stream DataStream)
         {
-            _Content = null;
+            //_Content = null;
             if (DataStream.Position == DataStream.Length) return;
             var content = new byte[DataStream.Length - DataStream.Position];
             DataStream.Read(content, 0, content.Length);
@@ -93,7 +93,7 @@ namespace MathCore.NET.HTTP
 
         protected async Task LoadContentAsync(Stream DataStream, CancellationToken Cancel = default)
         {
-            _Content = null;
+            //_Content = null;
             if (DataStream.Position == DataStream.Length) return;
             var content = new byte[DataStream.Length - DataStream.Position];
             await DataStream.ReadAsync(content, 0, content.Length, Cancel);
