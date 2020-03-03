@@ -8,8 +8,11 @@ namespace MathCore.NET.TestConsole
         private const int __ServerPort = 8080;
 
         static void Main(string[] args)
-        {
-            var user = Environment.UserName;
+        {   
+            CheckSystem.Run();
+
+            Console.WriteLine(new string('-', Console.BufferWidth));
+            Console.ReadLine();
 
             ServerHost.Start(__ServerPort);
             Console.WriteLine("Server started...");
