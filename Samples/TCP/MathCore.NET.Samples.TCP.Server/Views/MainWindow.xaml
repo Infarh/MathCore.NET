@@ -8,6 +8,36 @@
         Width="800" Height="450"
         DataContext="{Binding MainWindowModel, Source={StaticResource Locator}}">
     <Grid>
-
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="2*"/>
+            <ColumnDefinition Width="5*"/>
+        </Grid.ColumnDefinitions>
+        <GroupBox Grid.Column="0" Header="Параметры">
+            <StackPanel>
+                <GroupBox Header="Порт">
+                    <TextBox/>
+                </GroupBox>
+                <StackPanel Margin="10,3">
+                    <Button Content="Включить" Margin="0,3"/>
+                    <Button Content="Выключить" Margin="0,3"/>
+                </StackPanel>
+            </StackPanel>
+        </GroupBox>
+        <GridSplitter Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Stretch" Width="3"/>
+        <TabControl Grid.Column="1">
+            <TabItem Header="Клиенты">
+                <ListBox/>
+            </TabItem>
+            <TabItem Header="Сообщения">
+                <DockPanel>
+                    <DockPanel DockPanel.Dock="Bottom" Margin="3">
+                        <TextBlock Text="Сообщение" DockPanel.Dock="Left" VerticalAlignment="Center"/>
+                        <Button Content="Отправить" DockPanel.Dock="Right" Padding="3,3" Margin="5,0,0,0"/>
+                        <TextBox Margin="3,0" VerticalAlignment="Center"/>
+                    </DockPanel>
+                    <ListBox/>
+                </DockPanel>
+            </TabItem>
+        </TabControl>
     </Grid>
 </Window>
