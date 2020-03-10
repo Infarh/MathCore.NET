@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Windows.Input;
+﻿using System.Windows.Input;
 using MathCore.NET.Samples.TCP.Client.Services.Interfaces;
 using MathCore.WPF.Commands;
 using MathCore.WPF.ViewModels;
@@ -50,13 +47,10 @@ namespace MathCore.NET.Samples.TCP.Client.ViewModels
         public ICommand ConnectCommand { get; }
 
         /// <summary>Проверка возможности выполнения - Подключиться к хосту</summary>
-        private bool CanConnectCommandExecute() => true;
+        private bool CanConnectCommandExecute() => !_Client.Connected;
 
         /// <summary>Логика выполнения - Подключиться к хосту</summary>
-        private void OnConnectCommandExecuted()
-        {
-            
-        }
+        private void OnConnectCommandExecuted() => _Client.Connect(_Host, Port);
 
         #endregion
 
@@ -66,13 +60,10 @@ namespace MathCore.NET.Samples.TCP.Client.ViewModels
         public ICommand DisconnectCommand { get; }
 
         /// <summary>Проверка возможности выполнения - Отключиться от хоста</summary>
-        private bool CanDisconnectCommandExecute() => true;
+        private bool CanDisconnectCommandExecute() => _Client.Connected;
 
         /// <summary>Логика выполнения - Отключиться от хоста</summary>
-        private void OnDisconnectCommandExecuted()
-        {
-            
-        }
+        private void OnDisconnectCommandExecuted() => _Client.Disconnect();
 
         #endregion
 
