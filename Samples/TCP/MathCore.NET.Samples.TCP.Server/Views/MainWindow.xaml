@@ -7,6 +7,13 @@
         Title="{Binding Title}"
         Width="800" Height="450"
         DataContext="{Binding MainWindowModel, Source={StaticResource Locator}}">
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="DataTemplates/ClientsTemplates.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Window.Resources>
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="2*"/>
@@ -15,18 +22,18 @@
         <GroupBox Grid.Column="0" Header="Параметры">
             <StackPanel>
                 <GroupBox Header="Порт">
-                    <TextBox/>
+                    <TextBox Text="{Binding Port}"/>
                 </GroupBox>
                 <StackPanel Margin="10,3">
-                    <Button Content="Включить" Margin="0,3"/>
-                    <Button Content="Выключить" Margin="0,3"/>
+                    <Button Content="Включить" Margin="0,3" Command="{Binding StartCommand}"/>
+                    <Button Content="Выключить" Margin="0,3" Command="{Binding StopCommand}"/>
                 </StackPanel>
             </StackPanel>
         </GroupBox>
         <GridSplitter Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Stretch" Width="3"/>
         <TabControl Grid.Column="1">
             <TabItem Header="Клиенты">
-                <ListBox/>
+                <ListBox ItemsSource="{Binding Clients}" ItemTemplate="{StaticResource TCPClientListBoxItem}"/>
             </TabItem>
             <TabItem Header="Сообщения">
                 <DockPanel>

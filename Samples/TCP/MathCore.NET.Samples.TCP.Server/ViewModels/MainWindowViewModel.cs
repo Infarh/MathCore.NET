@@ -1,5 +1,12 @@
-﻿using System.Windows.Input;
+﻿using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Collections.Specialized;
+using System.Diagnostics;
+using System.Linq;
+using System.Windows.Input;
 using MathCore.NET.Samples.TCP.Server.Services.Interfaces;
+using MathCore.WPF;
 using MathCore.WPF.Commands;
 using MathCore.WPF.ViewModels;
 
@@ -26,6 +33,16 @@ namespace MathCore.NET.Samples.TCP.Server.ViewModels
 
         /// <summary>Порт сервера</summary>
         public int Port { get => _Port; set => Set(ref _Port, value); }
+
+        #endregion
+
+        #region Clients : ThreadSaveObservableCollectionWrapper<ClientViewModel> - Подключённые клиенты
+
+        /// <summary>Подключённые клиенты</summary>
+        private ThreadSaveObservableCollectionWrapper<ClientViewModel> _Clients = new ObservableCollection<ClientViewModel>().AsThreadSave();
+
+        /// <summary>Подключённые клиенты</summary>
+        public ThreadSaveObservableCollectionWrapper<ClientViewModel> Clients { get => _Clients; private set => Set(ref _Clients, value); }
 
         #endregion
 
@@ -61,7 +78,7 @@ namespace MathCore.NET.Samples.TCP.Server.ViewModels
 
         public MainWindowViewModel(ITCPServer Server)
         {
-            _Server = Server;
+            InitializeServer(_Server = Server);
 
             #region Команды
 
@@ -69,6 +86,59 @@ namespace MathCore.NET.Samples.TCP.Server.ViewModels
             StopCommand = new LambdaCommand(OnStopCommandExecuted, CanStopCommandExecute);
 
             #endregion
+        }
+
+        private void InitializeServer(ITCPServer Server)
+        {
+            if (!(Server.Clients is INotifyCollectionChanged collection)) return;
+            collection.CollectionChanged += OnClientsCollectionChanged;
+        }
+
+        private void OnClientsCollectionChanged(object Sender, NotifyCollectionChangedEventArgs E)
+        {
+            switch (E.Action)
+            {
+                case NotifyCollectionChangedAction.Add:
+                    foreach (var client in E.NewItems)
+                    {
+                        var client_view_model = new ClientViewModel((ITCPClient)client);
+                        _Clients.Add(client_view_model);
+                        Debug.WriteLine($"Connected:{client_view_model.Client.Host}({client_view_model.Client.Port})");
+                    }
+                    break;
+
+                case NotifyCollectionChangedAction.Remove:
+                    foreach (var client in E.OldItems)
+                    {
+                        var old_client = _Clients.First(c => ReferenceEquals(c.Client, client));
+                        if (old_client is null) continue;
+                        old_client.Dispose();
+                        _Clients.Remove(old_client);
+                    }
+                    break;
+
+                case NotifyCollectionChangedAction.Replace:
+                    foreach (var client in E.OldItems)
+                    {
+                        var old_client = _Clients.FirstOrDefault(c => ReferenceEquals(c.Client, client));
+                        if (old_client is null) continue;
+                        old_client.Dispose();
+                        _Clients.Remove(old_client);
+                    }
+
+                    foreach (var client in E.NewItems)
+                    {
+                        var client_view_model = new ClientViewModel((ITCPClient)client);
+                        _Clients.Add(client_view_model);
+                        Debug.WriteLine($"Connected:{client_view_model.Client.Host}({client_view_model.Client.Port})");
+                    }
+                    break;
+
+                case NotifyCollectionChangedAction.Reset:
+                    _Clients.Foreach(c => c.Dispose());
+                    Clients = new ObservableCollection<ClientViewModel>(((IEnumerable<ITCPClient>)Sender).Select(c => new ClientViewModel(c))).AsThreadSave();
+                    break;
+            }
         }
     }
 }
