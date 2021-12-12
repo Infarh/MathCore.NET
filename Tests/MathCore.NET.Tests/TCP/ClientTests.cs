@@ -2,7 +2,7 @@
 
 namespace MathCore.NET.Tests.TCP
 {
-    [TestClass]
+    [TestClass, Ignore]
     public class ClientTests
     {
         [TestMethod]

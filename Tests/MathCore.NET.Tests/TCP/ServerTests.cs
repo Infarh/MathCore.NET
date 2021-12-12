@@ -6,7 +6,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace MathCore.NET.Tests.TCP
 {
-    [TestClass]
+    [TestClass, Ignore]
     public class ServerTests
     {
         [TestMethod]
