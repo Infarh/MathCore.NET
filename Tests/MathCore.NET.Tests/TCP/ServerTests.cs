@@ -1,6 +1,4 @@
-﻿using System;
-using System.Net;
-using System.Net.Http;
+﻿using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using MathCore.NET.TCP;
@@ -8,7 +6,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace MathCore.NET.Tests.TCP
 {
-    [TestClass]
+    [TestClass, Ignore]
     public class ServerTests
     {
         [TestMethod]

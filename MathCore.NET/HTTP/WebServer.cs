@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Linq.Expressions;
 using System.Net;
 using System.Text.RegularExpressions;
 using MathCore.NET.HTTP.Events;
@@ -99,7 +97,7 @@ namespace MathCore.NET.HTTP
                 {
                     var match = Regex.Match(info, @"D\:(?<info>\((?<access>[AD]);;(?<value>[A-Z]+);;;(?<sid>[^)]+)\))+");
                     if(!match.Success)
-                        throw new FormatException("ошибка формата записи токена безопасности");
+                        throw new FormatException("Ошибка формата записи токена безопасности");
                 }
             }
 
@@ -161,7 +159,7 @@ namespace MathCore.NET.HTTP
                         rule = null;
                         continue;
                     }
-                if (rule is null) rule = new List<KeyValuePair<string, string>>();
+                rule ??= new List<KeyValuePair<string, string>>();
                 rule.Add(GetValue(line));
             }
 
@@ -245,10 +243,10 @@ namespace MathCore.NET.HTTP
         // ReSharper disable CommentTypo
         private readonly int _Port; // netsh http add urlacl url=http://+:8989/ user=shmac
         // ReSharper restore CommentTypo
-        private readonly object _SyncRoot = new object();
+        private readonly object _SyncRoot = new();
         private HttpListener _Listener;
         private readonly RouteManager _RouteManager;
-        private DirectoryInfo _HomeDirectory = new DirectoryInfo(Environment.CurrentDirectory);
+        private DirectoryInfo _HomeDirectory = new(Environment.CurrentDirectory);
 
         /* -------------------------------------------------------------------------------------------------------------------------------- */
 

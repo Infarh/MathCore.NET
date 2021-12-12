@@ -12,9 +12,17 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{534FA256-EB6F-4E93-AF7C-521FDA782708}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MathCore.NET.TestConsole", "Tests\MathCore.NET.TestConsole\MathCore.NET.TestConsole.csproj", "{1E50D0BC-126A-42FC-9860-8A2028B3AFBA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MathCore.NET.TestConsole", "Tests\MathCore.NET.TestConsole\MathCore.NET.TestConsole.csproj", "{1E50D0BC-126A-42FC-9860-8A2028B3AFBA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MathCore.NET.Tests", "Tests\MathCore.NET.Tests\MathCore.NET.Tests.csproj", "{C209684F-C1D3-4532-8E21-69656933372B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MathCore.NET.Tests", "Tests\MathCore.NET.Tests\MathCore.NET.Tests.csproj", "{C209684F-C1D3-4532-8E21-69656933372B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{DBC92A45-1798-4BD1-B0AB-EF840F8F9F2D}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TCP", "TCP", "{5A685731-8163-4158-A907-067EB9CA2694}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MathCore.NET.Samples.TCP.Server", "Samples\TCP\MathCore.NET.Samples.TCP.Server\MathCore.NET.Samples.TCP.Server.csproj", "{A0A7FD7E-37FA-4AD4-A211-BF63A8EB5A93}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MathCore.NET.Samples.TCP.Client", "Samples\TCP\MathCore.NET.Samples.TCP.Client\MathCore.NET.Samples.TCP.Client.csproj", "{8AD51365-4C7D-4297-9F08-A26C6FC45FFA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -34,6 +42,14 @@ Global
 		{C209684F-C1D3-4532-8E21-69656933372B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C209684F-C1D3-4532-8E21-69656933372B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C209684F-C1D3-4532-8E21-69656933372B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A0A7FD7E-37FA-4AD4-A211-BF63A8EB5A93}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A0A7FD7E-37FA-4AD4-A211-BF63A8EB5A93}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A0A7FD7E-37FA-4AD4-A211-BF63A8EB5A93}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A0A7FD7E-37FA-4AD4-A211-BF63A8EB5A93}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8AD51365-4C7D-4297-9F08-A26C6FC45FFA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8AD51365-4C7D-4297-9F08-A26C6FC45FFA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8AD51365-4C7D-4297-9F08-A26C6FC45FFA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8AD51365-4C7D-4297-9F08-A26C6FC45FFA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -41,6 +57,9 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{1E50D0BC-126A-42FC-9860-8A2028B3AFBA} = {534FA256-EB6F-4E93-AF7C-521FDA782708}
 		{C209684F-C1D3-4532-8E21-69656933372B} = {534FA256-EB6F-4E93-AF7C-521FDA782708}
+		{5A685731-8163-4158-A907-067EB9CA2694} = {DBC92A45-1798-4BD1-B0AB-EF840F8F9F2D}
+		{A0A7FD7E-37FA-4AD4-A211-BF63A8EB5A93} = {5A685731-8163-4158-A907-067EB9CA2694}
+		{8AD51365-4C7D-4297-9F08-A26C6FC45FFA} = {5A685731-8163-4158-A907-067EB9CA2694}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0A96B9D3-A756-46CC-BB8F-7B1DF7493FF7}

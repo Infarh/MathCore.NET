@@ -7,10 +7,10 @@ namespace MathCore.NET.HTTP
 {
     public class Route
     {
-        private static readonly Regex __RouteRegexTranslator = new Regex(@"\{(?<name>\w+)\}", RegexOptions.Compiled);
+        private static readonly Regex __RouteRegexTranslator = new(@"\{(?<name>\w+)\}", RegexOptions.Compiled);
 
         private static Regex CreateRegex(string route, bool IgnoreCase) => 
-            new Regex(
+            new(
                 __RouteRegexTranslator.Replace(route, m => $@"(?<{m.Groups["name"]}>\w+)"), 
                 IgnoreCase ? RegexOptions.IgnoreCase : RegexOptions.None);
 
@@ -22,6 +22,7 @@ namespace MathCore.NET.HTTP
 
         public Route(string route, Action<RequestInfo> action, bool IgnoreCase = true)
             : this(CreateRegex(route, IgnoreCase), action) { }
+        
         public Route(Regex regex, Action<RequestInfo> action)
         {
             _Regex = regex;
@@ -32,8 +33,8 @@ namespace MathCore.NET.HTTP
         {
             var match = _Regex.Match(context.Request.Url.LocalPath);
             if (!match.Success) return false;
-            using (var request_info = new RequestInfo(context, match, Server))
-                _Action(request_info);
+            using var request_info = new RequestInfo(context, match, Server);
+            _Action(request_info);
             return true;
         }
     }

@@ -5,8 +5,8 @@ namespace MathCore.NET.HTTP.Html
 {
     public class Page
     {
-        private Head _Head = new Head { AlwaysOpen = true };
-        private Body _Body = new Body { AlwaysOpen = true };
+        private Head _Head = new() { AlwaysOpen = true };
+        private Body _Body = new() { AlwaysOpen = true };
 
         public Head Head { get => _Head; set => _Head = value ?? new Head(); }
 

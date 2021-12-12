@@ -14,7 +14,7 @@ namespace MathCore.NET.HTTP
 
         /* ---------------------------------------------------------------------------------------------------------------------------- */
 
-        private readonly List<Route> _Routes = new List<Route>();
+        private readonly List<Route> _Routes = new();
         private readonly WebServer _Server;
 
         /* ---------------------------------------------------------------------------------------------------------------------------- */
@@ -42,6 +42,7 @@ namespace MathCore.NET.HTTP
 
         internal void Process(HttpListenerContext Context)
         {
+            // ReSharper disable once ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator
             foreach (var route in _Routes)
                 if (route.Execute(Context, _Server))
                     return;
