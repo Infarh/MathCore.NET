@@ -73,7 +73,7 @@ namespace MathCore.NET.TCP
 
         #region Поля
 
-        private readonly object _SyncRoot = new object();
+        private readonly object _SyncRoot = new();
 
         protected TcpClient _Client;
 
@@ -242,7 +242,7 @@ namespace MathCore.NET.TCP
                 return;
             }
 
-            if (_Client is null) _Client = new TcpClient();
+            _Client ??= new TcpClient();
             _ConnectionCancellation = new CancellationTokenSource();
             try
             {
@@ -484,7 +484,7 @@ namespace MathCore.NET.TCP
 
         public static explicit operator TcpClient(Client Client) => Client._Client;
 
-        public static explicit operator Client(TcpClient Client) => new Client(Client);
+        public static explicit operator Client(TcpClient Client) => new(Client);
 
         #region IDispose implementation
 

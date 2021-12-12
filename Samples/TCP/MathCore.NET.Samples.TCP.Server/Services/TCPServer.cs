@@ -1,8 +1,15 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Threading;
+
 using MathCore.NET.Samples.TCP.Server.Services.Interfaces;
+using MathCore.NET.TCP;
 using MathCore.NET.TCP.Events;
 
 namespace MathCore.NET.Samples.TCP.Server.Services
@@ -10,8 +17,11 @@ namespace MathCore.NET.Samples.TCP.Server.Services
     class TCPServer : ITCPServer
     {
         private NET.TCP.Server _Server;
-        private readonly ObservableCollection<ITCPClient> _Clients = new ObservableCollection<ITCPClient>();
+        private readonly ConcurrentDictionary<Client, ITCPClient> _ClientsDictionary = new();
+        private readonly ObservableCollection<ITCPClient> _Clients = new();
 
+        public event EventHandler<EventArgs<ITCPClient, string>> MessageReceived;
+        
         public int Port => _Server?.Port ?? -1;
 
         public bool Enabled => _Server?.Enabled ?? false;
@@ -53,6 +63,12 @@ namespace MathCore.NET.Samples.TCP.Server.Services
             }
         }
 
+        public void SendMessage(string Message)
+        {
+            foreach (var client in Clients)
+                client.Send(Message);
+        }
+
         private void CheckActivity()
         {
             if (!Enabled)
@@ -63,14 +79,29 @@ namespace MathCore.NET.Samples.TCP.Server.Services
         {
             Server.ClientConnected += OnClientConnected;
             Server.ClientDisconnected += OnClientDisconnected;
+            Server.DataReceived += OnDataReceived;
         }
 
-        private void OnClientConnected(object? Sender, ClientEventArgs E) => _Clients.Add(new TCPClient(E.Client));
+        private void OnDataReceived(object? Sender, ClientDataEventArgs E)
+        {
+            var tcp_client = E.Client;
+            var client = _Clients.FirstOrDefault(c => ((TCPClient)c).Client == tcp_client);
+            if (client is null) return;
+            var message = E.ClientData.Message;
+            MessageReceived?.Invoke(this, new EventArgs<ITCPClient, string>(client, message));
+        }
 
-        private void OnClientDisconnected(object? Sender, ClientEventArgs E)
+        private async void OnClientConnected(object Sender, ClientEventArgs E)
+        {
+            await Application.Current.Dispatcher;
+            _Clients.Add(new TCPClient(E.Client));
+        }
+
+        private async void OnClientDisconnected(object Sender, ClientEventArgs E)
         {
             var client_to_remove = _Clients.OfType<TCPClient>().FirstOrDefault(c => ReferenceEquals(c.Client, E.Client));
             if (client_to_remove is null) return;
+            await Application.Current.Dispatcher;
             _Clients.Remove(client_to_remove);
         }
     }

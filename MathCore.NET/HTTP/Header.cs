@@ -5,15 +5,14 @@ using System.IO;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using MathCore.NET.Extensions;
 
 namespace MathCore.NET.HTTP
 {
-    public abstract class Message : IEnumerable<KeyValuePair<string, string>>
+    public abstract class Message : IEnumerable<(string Header, string Value)>
     {
         //private byte[] _Content;
 
-        protected readonly List<KeyValuePair<string, string>> _Headers = new List<KeyValuePair<string, string>>();
+        protected readonly List<(string Header, string Value)> _Headers = new();
 
         public string UserAgent => GetHeader("User-Agent");
 
@@ -31,11 +30,8 @@ namespace MathCore.NET.HTTP
             if (Reader is null) throw new ArgumentNullException(nameof(Reader));
         }
 
-        public virtual Task LoadAsync(StreamReader Reader, CancellationToken Cancel = default)
-        {
-            if (Reader is null) throw new ArgumentNullException(nameof(Reader));
-            return Task.CompletedTask;
-        }
+        public virtual Task LoadAsync(StreamReader Reader, CancellationToken Cancel = default) => 
+            Reader is null ? throw new ArgumentNullException(nameof(Reader)) : Task.CompletedTask;
 
         public string GetHeader([CallerMemberName] string HeaderName = null)
         {
@@ -74,13 +70,13 @@ namespace MathCore.NET.HTTP
             _Headers.TrimExcess();
         }
 
-        protected static KeyValuePair<string, string> Parse(string line)
+        protected static (string Header, string Value) Parse(string line)
         {
             var separator_index = line.IndexOf(':');
-            if (separator_index <= 0) return new KeyValuePair<string, string>("unknown", line);
+            if (separator_index <= 0) return ("unknown", line);
             var header = line.Substring(0, separator_index);
             var value = line.Substring(separator_index + 2);
-            return new KeyValuePair<string, string>(header, value);
+            return (header, value);
         }
 
         protected void LoadContent(Stream DataStream)
@@ -99,7 +95,7 @@ namespace MathCore.NET.HTTP
             await DataStream.ReadAsync(content, 0, content.Length, Cancel);
         }
 
-        public IEnumerator<KeyValuePair<string, string>> GetEnumerator() => _Headers.GetEnumerator();
+        public IEnumerator<(string Header, string Value)> GetEnumerator() => _Headers.GetEnumerator();
 
         IEnumerator IEnumerable.GetEnumerator() => ((IEnumerable)_Headers).GetEnumerator();
     }

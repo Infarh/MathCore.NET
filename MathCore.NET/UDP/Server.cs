@@ -3,6 +3,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
+
 using MathCore.NET.UDP.Events;
 using MathCore.NET.UDP.Service;
 
@@ -39,7 +40,7 @@ namespace MathCore.NET.UDP
 
         /* --------------------------------------------------------------------------------------------- */
 
-        private readonly object _SyncRoot = new object();
+        private readonly object _SyncRoot = new();
 
         /// <summary>UDP-клиент</summary>
         private UdpClient _Client;
@@ -120,7 +121,7 @@ namespace MathCore.NET.UDP
                 {
                     var receive_data_task = Client.ReceiveAsync().WithCancellation(Cancel);
 
-                    if(buffer != null)
+                    if (buffer != null)
                         OnDataReceived(buffer, address);
 
                     (buffer, address) = await receive_data_task.ConfigureAwait(false);
@@ -128,7 +129,7 @@ namespace MathCore.NET.UDP
                 catch (OperationCanceledException) { }
                 catch (SocketException)
                 {
-                    
+
                 }
             }
         }
@@ -156,17 +157,17 @@ namespace MathCore.NET.UDP
 
         public int Send(byte[] Data, string Host, int Port) => _Client.Send(Data, Data.Length, Host, Port);
 
-        public async Task<int> SendAsync(byte[] Data, CancellationToken Cancel = default) => 
+        public async Task<int> SendAsync(byte[] Data, CancellationToken Cancel = default) =>
             await _Client.SendAsync(Data, Data.Length)
                .WithCancellation(Cancel)
                .ConfigureAwait(false);
 
-        public async Task<int> SendAsync(byte[] Data, IPEndPoint Address, CancellationToken Cancel = default) => 
+        public async Task<int> SendAsync(byte[] Data, IPEndPoint Address, CancellationToken Cancel = default) =>
             await _Client.SendAsync(Data, Data.Length, Address)
                .WithCancellation(Cancel)
                .ConfigureAwait(false);
 
-        public async Task<int> SendAsync(byte[] Data, string Host, int Port, CancellationToken Cancel = default) => 
+        public async Task<int> SendAsync(byte[] Data, string Host, int Port, CancellationToken Cancel = default) =>
             await _Client.SendAsync(Data, Data.Length, Host, Port)
                .WithCancellation(Cancel)
                .ConfigureAwait(false);

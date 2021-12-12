@@ -1,4 +1,10 @@
-﻿using System.Windows.Input;
+﻿using System;
+using System.Collections.ObjectModel;
+using System.Runtime.CompilerServices;
+using System.Windows;
+using System.Windows.Input;
+using System.Windows.Threading;
+
 using MathCore.NET.Samples.TCP.Client.Services.Interfaces;
 using MathCore.WPF.Commands;
 using MathCore.WPF.ViewModels;
@@ -22,7 +28,7 @@ namespace MathCore.NET.Samples.TCP.Client.ViewModels
         #region Host : string - Адрес хоста
 
         /// <summary>Адрес хоста</summary>
-        private string _Host;
+        private string _Host = "127.0.0.1";
 
         /// <summary>Адрес хоста</summary>
         public string Host { get => _Host; set => Set(ref _Host, value); }
@@ -32,12 +38,24 @@ namespace MathCore.NET.Samples.TCP.Client.ViewModels
         #region Port : int - Номер порта
 
         /// <summary>Номер порта</summary>
-        private int _Port;
+        private int _Port = 8080;
 
         /// <summary>Номер порта</summary>
         public int Port { get => _Port; set => Set(ref _Port, value); }
 
         #endregion
+
+        #region Message : string - Сообщение
+
+        /// <summary>Сообщение</summary>
+        private string _Message;
+
+        /// <summary>Сообщение</summary>
+        public string Message { get => _Message; set => Set(ref _Message, value); }
+
+        #endregion
+
+        public ObservableCollection<IncomingMessage> Messages { get; } = new();
 
         #region Команды
 
@@ -67,11 +85,29 @@ namespace MathCore.NET.Samples.TCP.Client.ViewModels
 
         #endregion
 
+        #region Command SendMessageCommand : string - Отправка сообщения
+
+        /// <summary>Отправка сообщения</summary>
+        private ICommand _SendMessageCommand;
+
+        /// <summary>Отправка сообщения</summary>
+        public ICommand SendMessageCommand => _SendMessageCommand
+            ??= new LambdaCommand<string>(OnSendMessageCommandExecuted, CanSendMessageCommandExecute);
+
+        /// <summary>Проверка возможности выполнения - Отправка сообщения</summary>
+        private bool CanSendMessageCommandExecute(string p) => _Client.Connected;
+
+        /// <summary>Проверка возможности выполнения - Отправка сообщения</summary>
+        private void OnSendMessageCommandExecuted(string p) => _Client.SendMessage(p);
+
+        #endregion
+
         #endregion
 
         public MainWindowViewModel(ITCPClient Client)
         {
             _Client = Client;
+            _Client.ReceiveMessage += OnMessageReceived;
 
             #region Команды
 
@@ -79,7 +115,12 @@ namespace MathCore.NET.Samples.TCP.Client.ViewModels
             DisconnectCommand = new LambdaCommand(OnDisconnectCommandExecuted, CanDisconnectCommandExecute);
 
             #endregion
+        }
 
+        private async void OnMessageReceived(object? Sender, EventArgs<string> E)
+        {
+            await Application.Current.Dispatcher;
+            Messages.Add(new IncomingMessage { Message = E.Argument });
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
@@ -6,6 +7,8 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+
+using MathCore.NET.Extensions;
 using MathCore.NET.TCP.Events;
 // ReSharper disable EventNeverSubscribedTo.Global
 // ReSharper disable UnusedType.Global
@@ -90,7 +93,7 @@ namespace MathCore.NET.TCP
 
         #region Поля
 
-        private readonly object _SyncRoot = new object();
+        private readonly object _SyncRoot = new();
 
         /// <summary>Поле, содержащее текущий прослушиваемый порт</summary>
         protected readonly int _Port;
@@ -109,7 +112,7 @@ namespace MathCore.NET.TCP
         protected bool _Enabled;
 
         /// <summary>Список подключённых клиентов</summary>
-        protected List<Client> _Clients;
+        protected ConcurrentDictionary<TcpClient, Client> _ClientsDictionary;
 
         #endregion
 
@@ -167,7 +170,7 @@ namespace MathCore.NET.TCP
                         return;
                     }
                     _Enabled = true;
-                    _Clients = new List<Client>();
+                    _ClientsDictionary = new ConcurrentDictionary<TcpClient, Client>();
                     _ListenProcessCancellation = new CancellationTokenSource();
                     ListenAsync(_Listener, _ListenProcessCancellation.Token);
                 }
@@ -191,14 +194,14 @@ namespace MathCore.NET.TCP
                     //Останавливаем слушателя
                     _Listener.Stop();
 
-                    if (_Clients != null)
+                    if (_ClientsDictionary != null)
                     {
-                        foreach (var client in _Clients.ToArray())
+                        foreach (var (_, client) in _ClientsDictionary)
                         {
                             RemoveEventHandlers(client);
-                            client.Stop();
+                            client.Dispose();
                         }
-                        _Clients.Clear();
+                        _ClientsDictionary.Clear();
                     }
 
                     //Обнуляем ссылки
@@ -222,12 +225,12 @@ namespace MathCore.NET.TCP
                     Cancel.ThrowIfCancellationRequested();
                     var waiting_client_task = Listener
                        .AcceptTcpClientAsync()
-                       .WithCancellation(Cancel)
-                       .ConfigureAwait(false);
+                       .WithCancellation(Cancel);
 
-                    if (client != null) AcceptClient(client);
+                    if (client != null)
+                        await AcceptClientAsync(client).ConfigureAwait(false);
 
-                    client = await waiting_client_task;
+                    client = await waiting_client_task.ConfigureAwait(false);
                 }
             }
             catch (OperationCanceledException) { }
@@ -245,7 +248,7 @@ namespace MathCore.NET.TCP
             Client.DataSent += OnClientDataSent;
         }
 
-        protected virtual void AcceptClient(TcpClient Client)
+        protected virtual async Task AcceptClientAsync(TcpClient Client)
         {
             //Создаём новый экземпляр класса "Client", в котором будет происходить дальнейшая работа с клиентом
             var client = new Client(Client);
@@ -255,9 +258,11 @@ namespace MathCore.NET.TCP
             client.DataEncoding = _DataEncoding;
 
             //Добавляем клиента в список
-            lock (_SyncRoot) _Clients.Add(client);
 
-            client.Start();
+            _ClientsDictionary[Client] = client;
+
+            if (!Client.Connected)
+                await client.StartAsync().ConfigureAwait(false);
 
             OnClientConnected(client);
         }
@@ -275,7 +280,7 @@ namespace MathCore.NET.TCP
             RemoveEventHandlers(Client);
 
             //Удаляем клиента из списка
-            lock (_SyncRoot) _Clients.Remove(Client);
+            _ClientsDictionary.TryRemove((TcpClient)Client, out _);
             OnClientDisconnected(Client);
         }
 
@@ -330,7 +335,7 @@ namespace MathCore.NET.TCP
             _Disposed = true;
             Stop();
             _ListenProcessCancellation?.Dispose();
-            lock (_SyncRoot) _Clients?.Clear();
+            _ClientsDictionary.Clear();
         }
 
         #endregion

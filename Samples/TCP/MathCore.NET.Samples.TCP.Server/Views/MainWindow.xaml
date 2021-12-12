@@ -39,10 +39,23 @@
                 <DockPanel>
                     <DockPanel DockPanel.Dock="Bottom" Margin="3">
                         <TextBlock Text="Сообщение" DockPanel.Dock="Left" VerticalAlignment="Center"/>
-                        <Button Content="Отправить" DockPanel.Dock="Right" Padding="3,3" Margin="5,0,0,0"/>
-                        <TextBox Margin="3,0" VerticalAlignment="Center"/>
+                        <Button Content="Отправить" DockPanel.Dock="Right" Padding="3,3" Margin="5,0,0,0"
+                                Command="{Binding SendMessageCommand}"
+                                CommandParameter="{Binding Message}"/>
+                        <TextBox Margin="3,0" VerticalAlignment="Center" Text="{Binding Message}"/>
                     </DockPanel>
-                    <ListBox/>
+                    <ListBox ItemsSource="{Binding Messages}">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <DockPanel>
+                                    <TextBlock Text="{Binding Time}"/>
+                                    <TextBlock Text="{Binding Client.Host}"/>
+                                    <TextBlock Text="{Binding Client.Port}"/>
+                                    <TextBlock Text="{Binding Message}"/>
+                                </DockPanel>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
                 </DockPanel>
             </TabItem>
         </TabControl>

@@ -4,7 +4,10 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Linq;
+using System.Windows;
 using System.Windows.Input;
+using System.Windows.Threading;
+
 using MathCore.NET.Samples.TCP.Server.Services.Interfaces;
 using MathCore.WPF;
 using MathCore.WPF.Commands;
@@ -46,6 +49,18 @@ namespace MathCore.NET.Samples.TCP.Server.ViewModels
 
         #endregion
 
+        #region Message : string - Сообщение
+
+        /// <summary>Сообщение</summary>
+        private string _Message;
+
+        /// <summary>Сообщение</summary>
+        public string Message { get => _Message; set => Set(ref _Message, value); }
+
+        #endregion
+
+        public ObservableCollection<IncomingMessage> Messages { get; } = new();
+
         #region Команды
 
         #region Command StartCommand - Запуск сервера
@@ -74,6 +89,23 @@ namespace MathCore.NET.Samples.TCP.Server.ViewModels
 
         #endregion
 
+        #region Command SendMessageCommand : string - Отправка сообщения всем клиентам
+
+        /// <summary>Отправка сообщения всем клиентам</summary>
+        private ICommand _SendMessageCommand;
+
+        /// <summary>Отправка сообщения всем клиентам</summary>
+        public ICommand SendMessageCommand => _SendMessageCommand
+            ??= new LambdaCommand<string>(OnSendMessageCommandExecuted, CanSendMessageCommandExecute);
+
+        /// <summary>Проверка возможности выполнения - Отправка сообщения всем клиентам</summary>
+        private bool CanSendMessageCommandExecute(string p) => _Server.Enabled;
+
+        /// <summary>Проверка возможности выполнения - Отправка сообщения всем клиентам</summary>
+        private void OnSendMessageCommandExecuted(string p) => _Server.SendMessage(p);
+
+        #endregion
+
         #endregion
 
         public MainWindowViewModel(ITCPServer Server)
@@ -90,8 +122,15 @@ namespace MathCore.NET.Samples.TCP.Server.ViewModels
 
         private void InitializeServer(ITCPServer Server)
         {
-            if (!(Server.Clients is INotifyCollectionChanged collection)) return;
+            if (Server.Clients is not INotifyCollectionChanged collection) return;
             collection.CollectionChanged += OnClientsCollectionChanged;
+            Server.MessageReceived += OnMessageReceived;
+        }
+
+        private async void OnMessageReceived(object? Sender, EventArgs<ITCPClient, string> E)
+        {
+            await Application.Current.Dispatcher;
+            Messages.Add(new IncomingMessage { Client = E.Argument1, Message = E.Argument2 });
         }
 
         private void OnClientsCollectionChanged(object Sender, NotifyCollectionChangedEventArgs E)
@@ -99,17 +138,19 @@ namespace MathCore.NET.Samples.TCP.Server.ViewModels
             switch (E.Action)
             {
                 case NotifyCollectionChangedAction.Add:
-                    foreach (var client in E.NewItems)
+                    foreach (ITCPClient client in E.NewItems)
                     {
-                        var client_view_model = new ClientViewModel((ITCPClient)client);
+                        if (client is null) continue;
+                        var client_view_model = new ClientViewModel(client);
                         _Clients.Add(client_view_model);
                         Debug.WriteLine($"Connected:{client_view_model.Client.Host}({client_view_model.Client.Port})");
                     }
                     break;
 
                 case NotifyCollectionChangedAction.Remove:
-                    foreach (var client in E.OldItems)
+                    foreach (ITCPClient client in E.OldItems)
                     {
+                        if (client is null) continue;
                         var old_client = _Clients.First(c => ReferenceEquals(c.Client, client));
                         if (old_client is null) continue;
                         old_client.Dispose();
@@ -118,17 +159,19 @@ namespace MathCore.NET.Samples.TCP.Server.ViewModels
                     break;
 
                 case NotifyCollectionChangedAction.Replace:
-                    foreach (var client in E.OldItems)
+                    foreach (ITCPClient client in E.OldItems)
                     {
+                        if (client is null) continue;
                         var old_client = _Clients.FirstOrDefault(c => ReferenceEquals(c.Client, client));
                         if (old_client is null) continue;
                         old_client.Dispose();
                         _Clients.Remove(old_client);
                     }
 
-                    foreach (var client in E.NewItems)
+                    foreach (ITCPClient client in E.NewItems)
                     {
-                        var client_view_model = new ClientViewModel((ITCPClient)client);
+                        if (client is null) continue;
+                        var client_view_model = new ClientViewModel(client);
                         _Clients.Add(client_view_model);
                         Debug.WriteLine($"Connected:{client_view_model.Client.Host}({client_view_model.Client.Port})");
                     }

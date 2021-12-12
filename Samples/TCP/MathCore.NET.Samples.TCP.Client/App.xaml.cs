@@ -29,10 +29,7 @@ namespace MathCore.NET.Samples.TCP.Client
 
         public static void ConfigureServices(HostBuilderContext context, IServiceCollection Services)
         {
-            var configuration = context.Configuration;
-
             Services.AddSingleton<MainWindowViewModel>();
-
             Services.AddSingleton<ITCPClient, TCPClient>();
         }
     }

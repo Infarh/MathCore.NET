@@ -16,10 +16,10 @@ namespace MathCore.NET.HTTP
         public Match RouteRegexMatch { get; }
 
         public WebServer Server => _Server;
-        public BinaryReader BinaryReader => new BinaryReader(Context.Request.InputStream);
-        public StreamReader Reader => new StreamReader(Context.Request.InputStream);
-        public BinaryWriter BinaryWriter => new BinaryWriter(Context.Response.OutputStream);
-        public StreamWriter Writer => new StreamWriter(Context.Response.OutputStream) { AutoFlush = true };
+        public BinaryReader BinaryReader => new(Context.Request.InputStream);
+        public StreamReader Reader => new(Context.Request.InputStream);
+        public BinaryWriter BinaryWriter => new(Context.Response.OutputStream);
+        public StreamWriter Writer => new(Context.Response.OutputStream) { AutoFlush = true };
         public Uri URI => Context.Request.Url;
 
         public string ContentType { get => Context.Response.ContentType; set => Context.Response.ContentType = value; }
@@ -68,18 +68,16 @@ namespace MathCore.NET.HTTP
             try
             {
                 var response_stream = response.OutputStream;
-                using (var file_stream = file.OpenRead())
+                using var file_stream = file.OpenRead();
+                response.ContentLength64 = file_stream.Length;
+                var buffer = new byte[buffer_length];
+                int readed;
+                do
                 {
-                    response.ContentLength64 = file_stream.Length;
-                    var buffer = new byte[buffer_length];
-                    int readed;
-                    do
-                    {
-                        readed = file_stream.Read(buffer, 0, buffer_length);
-                        response_stream.Write(buffer, 0, readed);
-                        progress?.Report((double)file_stream.Position / file_stream.Length);
-                    } while (readed == buffer_length);
-                }
+                    readed = file_stream.Read(buffer, 0, buffer_length);
+                    response_stream.Write(buffer, 0, readed);
+                    progress?.Report((double)file_stream.Position / file_stream.Length);
+                } while (readed == buffer_length);
             }
             catch (Exception e)
             {
@@ -103,18 +101,16 @@ namespace MathCore.NET.HTTP
             try
             {
                 var response_stream = response.OutputStream;
-                using (var file_stream = file.OpenRead())
+                using var file_stream = file.OpenRead();
+                response.ContentLength64 = file_stream.Length;
+                var buffer = new byte[buffer_length];
+                int readed;
+                do
                 {
-                    response.ContentLength64 = file_stream.Length;
-                    var buffer = new byte[buffer_length];
-                    int readed;
-                    do
-                    {
-                        readed = file_stream.Read(buffer, 0, buffer_length);
-                        response_stream.Write(buffer, 0, readed);
-                        progress?.Report((double)file_stream.Position / file_stream.Length);
-                    } while (readed == buffer_length);
-                }
+                    readed = file_stream.Read(buffer, 0, buffer_length);
+                    response_stream.Write(buffer, 0, readed);
+                    progress?.Report((double)file_stream.Position / file_stream.Length);
+                } while (readed == buffer_length);
             }
             catch (Exception e)
             {

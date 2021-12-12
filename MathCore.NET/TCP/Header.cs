@@ -5,7 +5,7 @@ namespace MathCore.NET.TCP
 {
     public struct Header
     {
-        public readonly struct HeaderChecksum
+        public readonly ref struct HeaderChecksum
         {
             public readonly ushort Value;
             private readonly byte[] _HeaderData;
@@ -21,7 +21,7 @@ namespace MathCore.NET.TCP
             }
         }
 
-        public readonly struct Acknowledgement
+        public readonly ref struct Acknowledgement
         {
             public readonly long Data;
             private readonly DataOffsetAndFlags _Flags;
@@ -88,12 +88,12 @@ namespace MathCore.NET.TCP
 
         public long SequenceNumber => BitConverter.ToUInt32(HeaderData, _Offset + 4);
 
-        public Acknowledgement AcknowledgementNumber => new Acknowledgement(BitConverter.ToUInt32(HeaderData, _Offset + 8), OffsetAndFlags);
+        public Acknowledgement AcknowledgementNumber => new(BitConverter.ToUInt32(HeaderData, _Offset + 8), OffsetAndFlags);
 
         public DataOffsetAndFlags OffsetAndFlags => _OffsetAndFlags ?? (DataOffsetAndFlags)(_OffsetAndFlags = new DataOffsetAndFlags(BitConverter.ToUInt16(HeaderData, _Offset + 12)));
 
         public ushort WindowSize => BitConverter.ToUInt16(HeaderData, _Offset + 14);
-        public HeaderChecksum Checksum => new HeaderChecksum(BitConverter.ToUInt16(HeaderData, _Offset + 16), HeaderData, _Offset);
+        public HeaderChecksum Checksum => new(BitConverter.ToUInt16(HeaderData, _Offset + 16), HeaderData, _Offset);
         public int UrgentPointer => OffsetAndFlags.UrgentPointerExist ? BitConverter.ToInt16(HeaderData, _Offset + 18) : 0;
         public int HeaderLength => OffsetAndFlags.HeaderLength;
         public int DataLength => HeaderData.Length - HeaderLength - _Offset;

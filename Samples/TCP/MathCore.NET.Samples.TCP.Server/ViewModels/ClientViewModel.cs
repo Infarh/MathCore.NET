@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using MathCore.NET.Samples.TCP.Server.Services.Interfaces;
+﻿using MathCore.NET.Samples.TCP.Server.Services.Interfaces;
 using MathCore.WPF.ViewModels;
 
 namespace MathCore.NET.Samples.TCP.Server.ViewModels

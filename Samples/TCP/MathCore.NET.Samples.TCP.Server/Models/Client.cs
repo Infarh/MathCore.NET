@@ -1,7 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Text;
+
 using MathCore.NET.TCP.Events;
 
 namespace MathCore.NET.Samples.TCP.Server.Models
@@ -28,10 +27,7 @@ namespace MathCore.NET.Samples.TCP.Server.Models
             client.Disconnected -= OnDisconnected;
         }
 
-        private void OnDisconnected(object? Sender, EventArgs E)
-        {
-            UnsubscribeFromEvents((NET.TCP.Client)Sender);
-        }
+        private void OnDisconnected(object? Sender, EventArgs E) => UnsubscribeFromEvents((NET.TCP.Client)Sender);
 
         private void OnError(object? Sender, ErrorEventArgs E)
         {
