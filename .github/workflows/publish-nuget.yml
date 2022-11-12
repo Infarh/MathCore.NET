@@ -12,12 +12,12 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@master
+        uses: actions/checkout@м3
 
       - name: User .NET
-        uses: actions/setup-dotnet@v1
+        uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: 6.0.x
+          dotnet-version: 7.0.x
 
       - name: Building
         run: |
@@ -27,7 +27,7 @@ jobs:
         run: dotnet test Tests/MathCore.NET.Tests/MathCore.NET.Tests.csproj --nologo
 
       - name: Packing
-        run: dotnet pack MathCore.NET/MathCore.NET.csproj -c Release -v m
+        run: dotnet pack MathCore.NET/MathCore.NET.csproj -c Release -v q
          
       - name: Publishing
         run: dotnet nuget push MathCore.NET/bin/Release/*.nupkg -k ${{ secrets.NuGetApiKey }} --skip-duplicate -s https://api.nuget.org/v3/index.json
