@@ -1,24 +1,39 @@
 name: Testing
 
-on: [push, pull_request]
+on: [push]
+
+env:
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
+  DOTNET_NOLOGO: true
 
 jobs:
   test:
     name: Test on .NET Core
-    runs-on: [ubuntu-latest]
+    runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
       - name: Use .NET
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: 7.0.x
+          
+      - name: Cache NuGet  
+        uses: actions/cache@v3
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget
 
       - name: Building
         run: |
-          dotnet build MathCore.NET/MathCore.NET.csproj --nologo          
-          dotnet build Tests/MathCore.NET.Tests/MathCore.NET.Tests.csproj --nologo
+          dotnet build MathCore.NET/MathCore.NET.csproj          
+          dotnet build Tests/MathCore.NET.Tests/MathCore.NET.Tests.csproj
           
       - name: Run Tests
-        run: dotnet test Tests/MathCore.NET.Tests/MathCore.NET.Tests.csproj --nologo
+        run: dotnet test Tests/MathCore.NET.Tests/MathCore.NET.Tests.csproj --no-build
