@@ -10,9 +10,9 @@ public class HAttribute
 
     public HAttribute(string AttributeName, string Value)
     {
-            _AttributeName = AttributeName;
-            _Value = Value;
-        }
+        _AttributeName = AttributeName;
+        _Value = Value;
+    }
 
     /// <inheritdoc />
     public override string ToString() => $"{_AttributeName}=\"{_Value}\"";

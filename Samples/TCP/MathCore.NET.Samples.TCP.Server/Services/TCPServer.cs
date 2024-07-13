@@ -19,7 +19,7 @@ internal class TCPServer : ITCPServer
     private readonly ObservableCollection<ITCPClient> _Clients = new();
 
     public event EventHandler<EventArgs<ITCPClient, string>>? MessageReceived;
-        
+
     public int Port => _Server?.Port ?? -1;
 
     public bool Enabled => _Server?.Enabled ?? false;

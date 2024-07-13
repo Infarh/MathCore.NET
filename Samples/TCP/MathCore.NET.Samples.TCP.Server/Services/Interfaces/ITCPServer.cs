@@ -5,8 +5,8 @@ namespace MathCore.NET.Samples.TCP.Server.Services.Interfaces;
 
 internal interface ITCPServer
 {
-    event EventHandler<EventArgs<ITCPClient, string>> MessageReceived; 
-        
+    event EventHandler<EventArgs<ITCPClient, string>> MessageReceived;
+
     int Port { get; }
 
     bool Enabled { get; }

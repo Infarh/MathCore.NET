@@ -52,7 +52,7 @@ public class RequestInfo : EventArgs, IDisposable
         return this;
     }
 
-    public RequestInfo SendFile(string FileName, int buffer_length = 1048, IProgress<double>? progress = null)
+    public RequestInfo SendFile(string FileName, int BufferLength = 1048, IProgress<double>? progress = null)
     {
         var response = Context.Response;
         var file = new FileInfo(FileName);
@@ -71,14 +71,14 @@ public class RequestInfo : EventArgs, IDisposable
             var response_stream = response.OutputStream;
             using var file_stream = file.OpenRead();
             response.ContentLength64 = file_stream.Length;
-            var buffer = new byte[buffer_length];
+            var buffer = new byte[BufferLength];
             int readed;
             do
             {
-                readed = file_stream.Read(buffer, 0, buffer_length);
+                readed = file_stream.Read(buffer, 0, BufferLength);
                 response_stream.Write(buffer, 0, readed);
                 progress?.Report((double)file_stream.Position / file_stream.Length);
-            } while (readed == buffer_length);
+            } while (readed == BufferLength);
         }
         catch (Exception e)
         {
@@ -89,7 +89,7 @@ public class RequestInfo : EventArgs, IDisposable
         return this;
     }
 
-    public RequestInfo SendFile(int buffer_length = 1048, IProgress<double>? progress = null)
+    public RequestInfo SendFile(int BufferLength = 1048, IProgress<double>? Progress = null)
     {
         var file = new FileInfo(Path.Combine(_Server.HomeDirectoryPath, URI.LocalPath.TrimStart('/')));
         var response = Context.Response;
@@ -104,14 +104,14 @@ public class RequestInfo : EventArgs, IDisposable
             var response_stream = response.OutputStream;
             using var file_stream = file.OpenRead();
             response.ContentLength64 = file_stream.Length;
-            var buffer = new byte[buffer_length];
+            var buffer = new byte[BufferLength];
             int readed;
             do
             {
-                readed = file_stream.Read(buffer, 0, buffer_length);
+                readed = file_stream.Read(buffer, 0, BufferLength);
                 response_stream.Write(buffer, 0, readed);
-                progress?.Report((double)file_stream.Position / file_stream.Length);
-            } while (readed == buffer_length);
+                Progress?.Report((double)file_stream.Position / file_stream.Length);
+            } while (readed == BufferLength);
         }
         catch (Exception e)
         {

@@ -47,17 +47,17 @@ public class DataEventArgs : EventArgs
     /// <param name="DataFormatter">Объект десериализации</param>
     public DataEventArgs(byte[] Data, int ReadedDataLength, Encoding DataEncoding, IFormatter DataFormatter)
     {
-            _Data = Data;
-            _ReadedDataLength = ReadedDataLength;
-            _DataEncoding = DataEncoding;
-            _DataFormatter = DataFormatter;
-        }
+        _Data = Data;
+        _ReadedDataLength = ReadedDataLength;
+        _DataEncoding = DataEncoding;
+        _DataFormatter = DataFormatter;
+    }
 
     protected object Deserialize()
     {
-            using var stream = DataStream;
-            return _DataFormatter.Deserialize(stream);
-        }
+        using var stream = DataStream;
+        return _DataFormatter.Deserialize(stream);
+    }
 
     public T ReadAs<T>() => (T)Deserialize();
 

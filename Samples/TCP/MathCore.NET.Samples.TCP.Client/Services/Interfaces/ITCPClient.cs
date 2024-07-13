@@ -5,7 +5,7 @@ namespace MathCore.NET.Samples.TCP.Client.Services.Interfaces;
 internal interface ITCPClient
 {
     event EventHandler<EventArgs<string>> ReceiveMessage;
-        
+
     public string? Address { get; }
 
     public int Port { get; }

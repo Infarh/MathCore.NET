@@ -14,19 +14,19 @@ internal class ClientViewModel : ViewModel
     private void InitializeClient(ITCPClient client)
     {
 
-        }
+    }
 
     private void FinalizeClient(ITCPClient client)
     {
-            if (Client is null) return;
+        if (Client is null) return;
 
-        }
+    }
 
     protected override void Dispose(bool disposing)
     {
-            base.Dispose(disposing);
-            if (!disposing) return;
-            FinalizeClient(_Client);
-            _Client = null;
-        }
+        base.Dispose(disposing);
+        if (!disposing) return;
+        FinalizeClient(_Client);
+        _Client = null;
+    }
 }

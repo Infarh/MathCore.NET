@@ -15,9 +15,9 @@ public sealed class DataReceivedEventArgs : EventArgs
     /// <param name="EndPoint">Точка сети - источник данных</param>
     public DataReceivedEventArgs(byte[]? Data, IPEndPoint? EndPoint)
     {
-            this.Data = Data;
-            this.EndPoint = EndPoint;
-        }
+        this.Data = Data;
+        this.EndPoint = EndPoint;
+    }
     /// <summary>Оператор неявного приведения типов к типу данных "массив байт"</summary>
     /// <param name="Arg">Аргумент события получения данных</param>
     /// <returns>Массив байт</returns>

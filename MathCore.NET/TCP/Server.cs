@@ -81,12 +81,12 @@ public class Server : IDisposable
     /// <param name="e">Возникшая ошибка</param>
     protected virtual void OnError(ErrorEventArgs e)
     {
-            var handler = Error;
-            if (handler != null)
-                handler.Invoke(this, e);
-            else
-                throw e.GetException();
-        }
+        var handler = Error;
+        if (handler != null)
+            handler.Invoke(this, e);
+        else
+            throw e.GetException();
+    }
 
     #endregion
 
@@ -151,64 +151,64 @@ public class Server : IDisposable
     /// <summary>Метод запуска сервера</summary>
     public void Start()
     {
-            //Если сервер активен, выходим
+        //Если сервер активен, выходим
+        if (_Enabled) return;
+        lock (_SyncRoot)
             if (_Enabled) return;
-            lock (_SyncRoot)
-                if (_Enabled) return;
-                else
+            else
+            {
+                _Listener = new(_AddressType, _Port);
+                try
                 {
-                    _Listener = new(_AddressType, _Port);
-                    try
-                    {
-                        _Listener.Start();
-                    }
-                    catch (SocketException error)
-                    {
-                        Stop();
-                        OnError(new(error));
-                        return;
-                    }
-                    _Enabled = true;
-                    _ClientsDictionary = new();
-                    _ListenProcessCancellation = new();
-                    ListenAsync(_Listener, _ListenProcessCancellation.Token);
+                    _Listener.Start();
                 }
-            OnStarted();
-        }
+                catch (SocketException error)
+                {
+                    Stop();
+                    OnError(new(error));
+                    return;
+                }
+                _Enabled = true;
+                _ClientsDictionary = new();
+                _ListenProcessCancellation = new();
+                ListenAsync(_Listener, _ListenProcessCancellation.Token);
+            }
+        OnStarted();
+    }
 
     /// <summary>Метод остановки сервера</summary>
     public void Stop()
     {
-            //Если сервер неактивен, то выходим
+        //Если сервер неактивен, то выходим
+        if (!_Enabled) return;
+        lock (_SyncRoot)
             if (!_Enabled) return;
-            lock (_SyncRoot)
-                if (!_Enabled) return;
-                else
+            else
+            {
+                //Устанавливаем признак активности сервера в состояние "отключён"
+                _Enabled = false;
+                _ListenProcessCancellation.Cancel();
+                _ListenProcessCancellation.Dispose();
+
+                //Останавливаем слушателя
+                _Listener.Stop();
+
+                if (_ClientsDictionary != null)
                 {
-                    //Устанавливаем признак активности сервера в состояние "отключён"
-                    _Enabled = false;
-                    _ListenProcessCancellation.Cancel();
-                    _ListenProcessCancellation.Dispose();
-
-                    //Останавливаем слушателя
-                    _Listener.Stop();
-
-                    if (_ClientsDictionary != null)
+                    foreach (var (_, client) in _ClientsDictionary)
                     {
-                        foreach (var (_, client) in _ClientsDictionary)
-                        {
-                            RemoveEventHandlers(client);
-                            client.Dispose();
-                        }
-                        _ClientsDictionary.Clear();
+                        RemoveEventHandlers(client);
+                        client.Dispose();
                     }
-
-                    //Обнуляем ссылки
-                    _Listener = null;
-                    _ListenProcessCancellation = null;
+                    _ClientsDictionary.Clear();
                 }
-            OnStopped();
-        }
+
+                //Обнуляем ссылки
+                _Listener = null;
+                _ListenProcessCancellation = null;
+            }
+        OnStopped();
+    }
 
     #endregion
 
@@ -216,72 +216,72 @@ public class Server : IDisposable
 
     protected virtual async void ListenAsync(TcpListener Listener, CancellationToken Cancel)
     {
-            try
+        try
+        {
+            TcpClient client = null;
+            while (true)
             {
-                TcpClient client = null;
-                while (true)
-                {
-                    Cancel.ThrowIfCancellationRequested();
-                    var waiting_client_task = Listener
-                       .AcceptTcpClientAsync()
-                       .WithCancellation(Cancel);
+                Cancel.ThrowIfCancellationRequested();
+                var waiting_client_task = Listener
+                   .AcceptTcpClientAsync()
+                   .WithCancellation(Cancel);
 
-                    if (client != null)
-                        await AcceptClientAsync(client).ConfigureAwait(false);
+                if (client != null)
+                    await AcceptClientAsync(client).ConfigureAwait(false);
 
-                    client = await waiting_client_task.ConfigureAwait(false);
-                }
-            }
-            catch (OperationCanceledException) { }
-            catch (Exception error)
-            {
-                OnError(new(error));
+                client = await waiting_client_task.ConfigureAwait(false);
             }
         }
+        catch (OperationCanceledException) { }
+        catch (Exception error)
+        {
+            OnError(new(error));
+        }
+    }
 
     private void AddEventHandlers(Client Client)
     {
-            Client.Disconnected += OnClientDisconnected;
-            Client.DataReceived += OnClientDataReceived;
-            Client.Error += OnClientError;
-            Client.DataSent += OnClientDataSent;
-        }
+        Client.Disconnected += OnClientDisconnected;
+        Client.DataReceived += OnClientDataReceived;
+        Client.Error += OnClientError;
+        Client.DataSent += OnClientDataSent;
+    }
 
     protected virtual async Task AcceptClientAsync(TcpClient Client)
     {
-            //Создаём новый экземпляр класса "Client", в котором будет происходить дальнейшая работа с клиентом
-            var client = new Client(Client);
+        //Создаём новый экземпляр класса "Client", в котором будет происходить дальнейшая работа с клиентом
+        var client = new Client(Client);
 
-            AddEventHandlers(client);
+        AddEventHandlers(client);
 
-            client.DataEncoding = _DataEncoding;
+        client.DataEncoding = _DataEncoding;
 
-            //Добавляем клиента в список
+        //Добавляем клиента в список
 
-            _ClientsDictionary[Client] = client;
+        _ClientsDictionary[Client] = client;
 
-            if (!Client.Connected)
-                await client.StartAsync().ConfigureAwait(false);
+        if (!Client.Connected)
+            await client.StartAsync().ConfigureAwait(false);
 
-            OnClientConnected(client);
-        }
+        OnClientConnected(client);
+    }
 
     private void RemoveEventHandlers(Client Client)
     {
-            Client.Disconnected -= OnClientDisconnected;
-            Client.DataReceived -= OnClientDataReceived;
-            Client.Error -= OnClientError;
-            Client.DataSent -= OnClientDataSent;
-        }
+        Client.Disconnected -= OnClientDisconnected;
+        Client.DataReceived -= OnClientDataReceived;
+        Client.Error -= OnClientError;
+        Client.DataSent -= OnClientDataSent;
+    }
 
     protected virtual void DisconnectClient(Client Client)
     {
-            RemoveEventHandlers(Client);
+        RemoveEventHandlers(Client);
 
-            //Удаляем клиента из списка
-            _ClientsDictionary.TryRemove((TcpClient)Client, out _);
-            OnClientDisconnected(Client);
-        }
+        //Удаляем клиента из списка
+        _ClientsDictionary.TryRemove((TcpClient)Client, out _);
+        OnClientDisconnected(Client);
+    }
 
     #endregion
 
@@ -319,9 +319,9 @@ public class Server : IDisposable
     /// <inheritdoc />
     public void Dispose()
     {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
 
     /// <summary>Признак того, что объект был разрушен</summary>
     private bool _Disposed;
@@ -330,12 +330,12 @@ public class Server : IDisposable
     /// <param name="disposing">Выполнить освобождение управляемых ресурсов</param>
     protected virtual void Dispose(bool disposing)
     {
-            if (_Disposed || !disposing) return;
-            _Disposed = true;
-            Stop();
-            _ListenProcessCancellation?.Dispose();
-            _ClientsDictionary.Clear();
-        }
+        if (_Disposed || !disposing) return;
+        _Disposed = true;
+        Stop();
+        _ListenProcessCancellation?.Dispose();
+        _ClientsDictionary.Clear();
+    }
 
     #endregion
 }

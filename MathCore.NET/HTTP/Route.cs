@@ -9,9 +9,9 @@ public class Route
 {
     private static readonly Regex __RouteRegexTranslator = new(@"\{(?<name>\w+)\}", RegexOptions.Compiled);
 
-    private static Regex CreateRegex(string route, bool IgnoreCase) => 
+    private static Regex CreateRegex(string route, bool IgnoreCase) =>
         new(
-            __RouteRegexTranslator.Replace(route, m => $@"(?<{m.Groups["name"]}>\w+)"), 
+            __RouteRegexTranslator.Replace(route, m => $@"(?<{m.Groups["name"]}>\w+)"),
             IgnoreCase ? RegexOptions.IgnoreCase : RegexOptions.None);
 
     private Regex _Regex;
@@ -22,19 +22,19 @@ public class Route
 
     public Route(string route, Action<RequestInfo> action, bool IgnoreCase = true)
         : this(CreateRegex(route, IgnoreCase), action) { }
-        
+
     public Route(Regex regex, Action<RequestInfo> action)
     {
-            _Regex = regex;
-            _Action = action;
-        }
+        _Regex = regex;
+        _Action = action;
+    }
 
     public bool Execute(HttpListenerContext context, WebServer Server)
     {
-            var match = _Regex.Match(context.Request.Url.LocalPath);
-            if (!match.Success) return false;
-            using var request_info = new RequestInfo(context, match, Server);
-            _Action(request_info);
-            return true;
-        }
+        var match = _Regex.Match(context.Request.Url.LocalPath);
+        if (!match.Success) return false;
+        using var request_info = new RequestInfo(context, match, Server);
+        _Action(request_info);
+        return true;
+    }
 }

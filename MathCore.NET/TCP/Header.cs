@@ -1,4 +1,5 @@
 ﻿using System;
+
 using MathCore.NET.TCP.Extensions;
 
 namespace MathCore.NET.TCP;
@@ -15,10 +16,10 @@ public struct Header
 
         internal HeaderChecksum(ushort Value, byte[] HeaderData, int Offset)
         {
-                this.Value = Value;
-                _HeaderData = HeaderData;
-                _Offset = Offset;
-            }
+            this.Value = Value;
+            _HeaderData = HeaderData;
+            _Offset = Offset;
+        }
     }
 
     public readonly ref struct Acknowledgement
@@ -30,9 +31,9 @@ public struct Header
 
         internal Acknowledgement(long data, DataOffsetAndFlags Flags)
         {
-                this.Data = data;
-                _Flags = Flags;
-            }
+            this.Data = data;
+            _Flags = Flags;
+        }
     }
 
     public readonly struct DataOffsetAndFlags
@@ -106,16 +107,16 @@ public struct Header
     {
         get
         {
-                var result = new byte[HeaderData.Length - HeaderLength - _Offset];
-                HeaderData.CopyTo(result, DataOffset);
-                return result;
-            }
+            var result = new byte[HeaderData.Length - HeaderLength - _Offset];
+            HeaderData.CopyTo(result, DataOffset);
+            return result;
+        }
     }
 
     public Header(byte[] buffer, int offset = 0)
     {
-            _OffsetAndFlags = null;
-            HeaderData = buffer;
-            _Offset = offset;
-        }
+        _OffsetAndFlags = null;
+        HeaderData = buffer;
+        _Offset = offset;
+    }
 }

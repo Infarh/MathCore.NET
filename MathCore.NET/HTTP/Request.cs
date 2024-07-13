@@ -24,15 +24,15 @@ public class Request : Message
         get => _QueryString;
         set
         {
-                if (Equals(_QueryString, value)) return;
-                _QueryString = value;
-                _QueryParameters = _QueryString?
-                   .Split('&')
-                   .Select(v => v.Split('='))
-                   .Where(v => v.Length == 2)
-                   .Select(v => (v[0], v[1]))
-                   .ToArray();
-            }
+            if (Equals(_QueryString, value)) return;
+            _QueryString = value;
+            _QueryParameters = _QueryString?
+               .Split('&')
+               .Select(v => v.Split('='))
+               .Where(v => v.Length == 2)
+               .Select(v => (v[0], v[1]))
+               .ToArray();
+        }
     }
 
     public (string Key, string Value)[] QueryParameters
@@ -40,12 +40,12 @@ public class Request : Message
         get => _QueryParameters;
         set
         {
-                if (ReferenceEquals(_QueryParameters, value)) return;
-                _QueryParameters = value;
-                _QueryString = value is null
-                    ? null
-                    : string.Join("&", value.Select(v => $"{v.Key}={v.Value}"));
-            }
+            if (ReferenceEquals(_QueryParameters, value)) return;
+            _QueryParameters = value;
+            _QueryString = value is null
+                ? null
+                : string.Join("&", value.Select(v => $"{v.Key}={v.Value}"));
+        }
     }
 
     public string UserAgent => GetHeader("User-Agent");
@@ -57,9 +57,9 @@ public class Request : Message
     {
         get
         {
-                var referer = GetHeader();
-                return string.IsNullOrWhiteSpace(referer) ? null : new Uri(referer);
-            }
+            var referer = GetHeader();
+            return string.IsNullOrWhiteSpace(referer) ? null : new Uri(referer);
+        }
     }
 
     public string AcceptEncoding => GetHeader("Accept-Encoding");
@@ -68,25 +68,25 @@ public class Request : Message
 
     public override void Load(StreamReader Reader)
     {
-            base.Load(Reader);
+        base.Load(Reader);
 
-            if (Reader.EndOfStream) throw new FormatException("Ошибка в первой строке");
-            var line = Reader.ReadLine();
-            if (string.IsNullOrWhiteSpace(line))
-                throw new FormatException("Ошибка в первой строке");
+        if (Reader.EndOfStream) throw new FormatException("Ошибка в первой строке");
+        var line = Reader.ReadLine();
+        if (string.IsNullOrWhiteSpace(line))
+            throw new FormatException("Ошибка в первой строке");
 
-            var components = line.Split(' ');
-            if (components.Length < 3) throw new FormatException("Число параметров первой строки меньше 3");
+        var components = line.Split(' ');
+        if (components.Length < 3) throw new FormatException("Число параметров первой строки меньше 3");
 
-            Method = components[0].ToUpper();
-            var path_str = components[1];
-            var path_str_components = path_str.Split('?');
-            Path = path_str_components[0];
-            QueryString = path_str_components.Length > 1 ? path_str_components[1] : null;
-            Version = components[2];
+        Method = components[0].ToUpper();
+        var path_str = components[1];
+        var path_str_components = path_str.Split('?');
+        Path = path_str_components[0];
+        QueryString = path_str_components.Length > 1 ? path_str_components[1] : null;
+        Version = components[2];
 
-            LoadHeaders(Reader);
+        LoadHeaders(Reader);
 
-            LoadContent(Reader.BaseStream);
-        }
+        LoadContent(Reader.BaseStream);
+    }
 }

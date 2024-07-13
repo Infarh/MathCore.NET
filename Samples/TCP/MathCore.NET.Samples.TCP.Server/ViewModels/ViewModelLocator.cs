@@ -1,4 +1,5 @@
 ﻿using System;
+
 using Microsoft.Extensions.DependencyInjection;
 
 namespace MathCore.NET.Samples.TCP.Server.ViewModels;

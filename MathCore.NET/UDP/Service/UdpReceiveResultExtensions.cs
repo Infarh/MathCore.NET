@@ -7,7 +7,7 @@ internal static class UdpReceiveResultExtensions
 {
     public static void Deconstruct(this UdpReceiveResult result, out byte[] Buffer, out IPEndPoint RemoteAddress)
     {
-            Buffer = result.Buffer;
-            RemoteAddress = result.RemoteEndPoint;
-        }
+        Buffer = result.Buffer;
+        RemoteAddress = result.RemoteEndPoint;
+    }
 }
