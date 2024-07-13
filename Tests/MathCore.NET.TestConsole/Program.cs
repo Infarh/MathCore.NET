@@ -1,13 +1,13 @@
 ﻿using System;
 
-namespace MathCore.NET.TestConsole
-{
-    class Program
-    {
-        private const int __ServerPort = 8080;
+namespace MathCore.NET.TestConsole;
 
-        static void Main(string[] args)
-        {   
+internal class Program
+{
+    private const int __ServerPort = 8080;
+
+    private static void Main(string[] args)
+    {   
             ServerHost.Start(__ServerPort);
             Console.WriteLine("Server started...");
             Console.ReadLine();
@@ -15,5 +15,4 @@ namespace MathCore.NET.TestConsole
             Console.WriteLine("End of process...");
             Console.ReadLine();
         }
-    }
 }

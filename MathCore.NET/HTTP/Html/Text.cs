@@ -1,15 +1,14 @@
-﻿namespace MathCore.NET.HTTP.Html
+﻿namespace MathCore.NET.HTTP.Html;
+
+public class Text : HElementBase
 {
-    public class Text : HElementBase
-    {
-        public string Value { get; set; }
+    public string Value { get; set; }
 
-        public Text(string text) => Value = text;
+    public Text(string text) => Value = text;
 
-        /// <inheritdoc />
-        public override string InnerText() => Value;
+    /// <inheritdoc />
+    public override string InnerText() => Value;
 
-        /// <inheritdoc />
-        public override string ToString(int level) => $"{GetSpacer(level)}{Value}";
-    }
+    /// <inheritdoc />
+    public override string ToString(int level) => $"{GetSpacer(level)}{Value}";
 }

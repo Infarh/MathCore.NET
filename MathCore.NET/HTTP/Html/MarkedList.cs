@@ -3,21 +3,21 @@ using System.Linq;
 using System.Text;
 using MathCore.NET.Extensions;
 
-namespace MathCore.NET.HTTP.Html
+namespace MathCore.NET.HTTP.Html;
+
+public class MarkedList : TypedElement
 {
-    public class MarkedList : TypedElement
+    private IEnumerable Items { get; set; }
+
+    public MarkedList(params ListItem[] items) : base("ul", items.Cast<HElementBase>().ToArray()) { }
+
+    public MarkedList(IEnumerable items) : base("ul") => Items = items;
+
+    public void Add(IEnumerable items) => Items = Items?.Concat(items) ?? items;
+
+    /// <inheritdoc />
+    public override string ToString(int level)
     {
-        private IEnumerable Items { get; set; }
-
-        public MarkedList(params ListItem[] items) : base("ul", items.Cast<HElementBase>().ToArray()) { }
-
-        public MarkedList(IEnumerable items) : base("ul") => Items = items;
-
-        public void Add(IEnumerable items) => Items = Items?.Concat(items) ?? items;
-
-        /// <inheritdoc />
-        public override string ToString(int level)
-        {
             var spacer = GetSpacer(level);
             var result = new StringBuilder($"{spacer}<{Name}");
             if (HasAttributes) result.AppendFormat(" {0}", string.Join(" ", Attributes));
@@ -40,5 +40,4 @@ namespace MathCore.NET.HTTP.Html
             result.AppendFormat("{1}</{0}>", Name, spacer);
             return result.ToString();
         }
-    }
 }

@@ -1,9 +1,8 @@
 ﻿using System.Linq;
 
-namespace MathCore.NET.HTTP.Html
+namespace MathCore.NET.HTTP.Html;
+
+public class MenuList : TypedElement
 {
-    public class MenuList : TypedElement
-    {
-        public MenuList(params ListItem[] items) : base("menu", items.Cast<HElementBase>().ToArray()) { }
-    }
+    public MenuList(params ListItem[] items) : base("menu", items.Cast<HElementBase>().ToArray()) { }
 }

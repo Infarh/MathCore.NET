@@ -21,6 +21,7 @@
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>MathCore.NET.Sign.snk</AssemblyOriginatorKeyFile>
     <Copyright>shmachilin@gmail.com</Copyright>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Release'">

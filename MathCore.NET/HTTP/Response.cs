@@ -1,16 +1,16 @@
 ﻿using System;
 using System.IO;
 
-namespace MathCore.NET.HTTP
+namespace MathCore.NET.HTTP;
+
+public class Response : Message
 {
-    public class Response : Message
+    public int Code { get; set; }
+
+    public string Status { get; set; }
+
+    public override void Load(StreamReader Reader)
     {
-        public int Code { get; set; }
-
-        public string Status { get; set; }
-
-        public override void Load(StreamReader Reader)
-        {
             base.Load(Reader);
 
             if (Reader.EndOfStream) throw new FormatException("Ошибка в первой строке");
@@ -29,5 +29,4 @@ namespace MathCore.NET.HTTP
 
             LoadContent(Reader.BaseStream);
         }
-    }
 }

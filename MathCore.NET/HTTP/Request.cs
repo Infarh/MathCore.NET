@@ -2,28 +2,28 @@
 using System.IO;
 using System.Linq;
 
-namespace MathCore.NET.HTTP
+namespace MathCore.NET.HTTP;
+
+public class Request : Message
 {
-    public class Request : Message
+    private string _QueryString;
+    private (string Key, string Value)[] _QueryParameters;
+
+    public string Method { get; set; }
+
+    public string Path { get; set; }
+
+    public string RequestPath => string.IsNullOrEmpty(_QueryString) ? Path : $"{Path}?{_QueryString}";
+
+    public string FullRequestPath => $"{Host}{RequestPath}";
+
+    public string Host => GetHeader();
+
+    public string QueryString
     {
-        private string _QueryString;
-        private (string Key, string Value)[] _QueryParameters;
-
-        public string Method { get; set; }
-
-        public string Path { get; set; }
-
-        public string RequestPath => string.IsNullOrEmpty(_QueryString) ? Path : $"{Path}?{_QueryString}";
-
-        public string FullRequestPath => $"{Host}{RequestPath}";
-
-        public string Host => GetHeader();
-
-        public string QueryString
+        get => _QueryString;
+        set
         {
-            get => _QueryString;
-            set
-            {
                 if (Equals(_QueryString, value)) return;
                 _QueryString = value;
                 _QueryParameters = _QueryString?
@@ -33,41 +33,41 @@ namespace MathCore.NET.HTTP
                    .Select(v => (v[0], v[1]))
                    .ToArray();
             }
-        }
+    }
 
-        public (string Key, string Value)[] QueryParameters
+    public (string Key, string Value)[] QueryParameters
+    {
+        get => _QueryParameters;
+        set
         {
-            get => _QueryParameters;
-            set
-            {
                 if (ReferenceEquals(_QueryParameters, value)) return;
                 _QueryParameters = value;
                 _QueryString = value is null
                     ? null
                     : string.Join("&", value.Select(v => $"{v.Key}={v.Value}"));
             }
-        }
+    }
 
-        public string UserAgent => GetHeader("User-Agent");
+    public string UserAgent => GetHeader("User-Agent");
 
-        public string Connection => GetHeader();
-        public string Accept => GetHeader();
+    public string Connection => GetHeader();
+    public string Accept => GetHeader();
 
-        public Uri Referer
+    public Uri Referer
+    {
+        get
         {
-            get
-            {
                 var referer = GetHeader();
                 return string.IsNullOrWhiteSpace(referer) ? null : new Uri(referer);
             }
-        }
+    }
 
-        public string AcceptEncoding => GetHeader("Accept-Encoding");
+    public string AcceptEncoding => GetHeader("Accept-Encoding");
 
-        public string AcceptLanguage => GetHeader("Accept-Language");
+    public string AcceptLanguage => GetHeader("Accept-Language");
 
-        public override void Load(StreamReader Reader)
-        {
+    public override void Load(StreamReader Reader)
+    {
             base.Load(Reader);
 
             if (Reader.EndOfStream) throw new FormatException("Ошибка в первой строке");
@@ -89,5 +89,4 @@ namespace MathCore.NET.HTTP
 
             LoadContent(Reader.BaseStream);
         }
-    }
 }

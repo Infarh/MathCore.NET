@@ -1,7 +1,6 @@
-﻿namespace MathCore.NET.HTTP.Html
+﻿namespace MathCore.NET.HTTP.Html;
+
+public class Title : TypedElement
 {
-    public class Title : TypedElement
-    {
-        public Title(params HElementBase[] elements) : base("title", elements) { }
-    }
+    public Title(params HElementBase[] elements) : base("title", elements) { }
 }

@@ -1,22 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace MathCore.NET.Samples.TCP.Server.Services.Interfaces
+namespace MathCore.NET.Samples.TCP.Server.Services.Interfaces;
+
+internal interface ITCPServer
 {
-    interface ITCPServer
-    {
-        event EventHandler<EventArgs<ITCPClient, string>> MessageReceived; 
+    event EventHandler<EventArgs<ITCPClient, string>> MessageReceived; 
         
-        int Port { get; }
+    int Port { get; }
 
-        bool Enabled { get; }
+    bool Enabled { get; }
 
-        ICollection<ITCPClient> Clients { get; }
+    ICollection<ITCPClient> Clients { get; }
 
-        void Start(int port = 8080);
+    void Start(int port = 8080);
 
-        void Stop();
+    void Stop();
 
-        void SendMessage(string Message);
-    }
+    void SendMessage(string Message);
 }

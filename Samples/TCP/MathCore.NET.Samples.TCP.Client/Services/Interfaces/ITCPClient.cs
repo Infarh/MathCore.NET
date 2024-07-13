@@ -1,21 +1,20 @@
 ﻿using System;
 
-namespace MathCore.NET.Samples.TCP.Client.Services.Interfaces
+namespace MathCore.NET.Samples.TCP.Client.Services.Interfaces;
+
+internal interface ITCPClient
 {
-    interface ITCPClient
-    {
-        event EventHandler<EventArgs<string>> ReceiveMessage;
+    event EventHandler<EventArgs<string>> ReceiveMessage;
         
-        public string Address { get; }
+    public string? Address { get; }
 
-        public int Port { get; }
+    public int Port { get; }
 
-        public bool Connected { get; }
+    public bool Connected { get; }
 
-        public void Connect(string address, int Port = 80);
+    public void Connect(string address, int Port = 80);
 
-        public void Disconnect();
+    public void Disconnect();
 
-        public void SendMessage(string Message);
-    }
+    public void SendMessage(string Message);
 }

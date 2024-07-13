@@ -1,6 +1,5 @@
-﻿namespace MathCore.NET.Extensions
+﻿namespace MathCore.NET.Extensions;
+
+internal class FormatterExtensions
 {
-    class FormatterExtensions
-    {
-    }
 }

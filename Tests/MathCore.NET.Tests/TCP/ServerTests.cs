@@ -4,14 +4,14 @@ using System.Threading.Tasks;
 using MathCore.NET.TCP;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace MathCore.NET.Tests.TCP
+namespace MathCore.NET.Tests.TCP;
+
+[TestClass, Ignore]
+public class ServerTests
 {
-    [TestClass, Ignore]
-    public class ServerTests
+    [TestMethod]
+    public void Creating()
     {
-        [TestMethod]
-        public void Creating()
-        {
             const int server_port = 18080;
             using var server = new Server(server_port);
 
@@ -21,9 +21,9 @@ namespace MathCore.NET.Tests.TCP
                .Where(s => s.Enabled).Check(state => state.IsFalse());
         }
 
-        [TestMethod]
-        public void StartingServer()
-        {
+    [TestMethod]
+    public void StartingServer()
+    {
             const int server_port = 18080;
             using var server = new Server(server_port);
 
@@ -35,9 +35,9 @@ namespace MathCore.NET.Tests.TCP
             Assert.That.Value(server_started).IsTrue();
         }
 
-        [TestMethod]
-        public void ServerStartStop()
-        {
+    [TestMethod]
+    public void ServerStartStop()
+    {
             const int server_port = 18080;
             using var server = new Server(server_port);
 
@@ -56,9 +56,9 @@ namespace MathCore.NET.Tests.TCP
             Assert.That.Value(server_started).IsFalse();
         }
 
-        [TestMethod]
-        public async Task ServerReceiveClientConnection()
-        {
+    [TestMethod]
+    public async Task ServerReceiveClientConnection()
+    {
             const int server_port = 18080;
             const string host = "127.0.0.1";
             using var server = new Server(server_port);
@@ -89,9 +89,9 @@ namespace MathCore.NET.Tests.TCP
             Assert.That.Value(connected_client.Enabled).IsFalse();
         }
 
-        [TestMethod]
-        public async Task ReceivingDataFromClient()
-        {
+    [TestMethod]
+    public async Task ReceivingDataFromClient()
+    {
             const int server_port = 18080;
             const string host = "127.0.0.1";
             using var server = new Server(server_port);
@@ -115,5 +115,4 @@ namespace MathCore.NET.Tests.TCP
 
             Assert.That.Value(received_message).IsEqual(message);
         }
-    }
 }

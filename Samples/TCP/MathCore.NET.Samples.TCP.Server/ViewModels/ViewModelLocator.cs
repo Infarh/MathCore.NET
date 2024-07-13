@@ -1,14 +1,13 @@
 ﻿using System;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace MathCore.NET.Samples.TCP.Server.ViewModels
+namespace MathCore.NET.Samples.TCP.Server.ViewModels;
+
+internal class ViewModelLocator
 {
-    class ViewModelLocator
-    {
-        private readonly IServiceProvider _Services;
+    private readonly IServiceProvider _Services;
 
-        public MainWindowViewModel MainWindowModel => _Services.GetRequiredService<MainWindowViewModel>();
+    public MainWindowViewModel MainWindowModel => _Services.GetRequiredService<MainWindowViewModel>();
 
-        public ViewModelLocator() => _Services = (App.Host ?? Program.CreateHostBuilder(Array.Empty<string>()).Build()).Services;
-    }
+    public ViewModelLocator() => _Services = (App.Host ?? Program.CreateHostBuilder(Array.Empty<string>()).Build()).Services;
 }

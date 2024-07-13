@@ -4,21 +4,21 @@ using System.Text;
 using MathCore.NET.Extensions;
 // ReSharper disable UnusedMember.Global
 
-namespace MathCore.NET.HTTP.Html
+namespace MathCore.NET.HTTP.Html;
+
+public class NumberedList : TypedElement
 {
-    public class NumberedList : TypedElement
+    private IEnumerable Items { get; set; }
+
+    public NumberedList(params ListItem[] items) : base("ol", items.Cast<HElementBase>().ToArray()) { }
+
+    public NumberedList(IEnumerable items) : base("ol") => Items = items;
+
+    public void Add(IEnumerable items) => Items = Items?.Concat(items) ?? items;
+
+    /// <inheritdoc />
+    public override string ToString(int level)
     {
-        private IEnumerable Items { get; set; }
-
-        public NumberedList(params ListItem[] items) : base("ol", items.Cast<HElementBase>().ToArray()) { }
-
-        public NumberedList(IEnumerable items) : base("ol") => Items = items;
-
-        public void Add(IEnumerable items) => Items = Items?.Concat(items) ?? items;
-
-        /// <inheritdoc />
-        public override string ToString(int level)
-        {
             var spacer = GetSpacer(level);
             var result = new StringBuilder($"{spacer}<{Name}");
             if (HasAttributes) result.AppendFormat(" {0}", string.Join(" ", Attributes));
@@ -41,5 +41,4 @@ namespace MathCore.NET.HTTP.Html
             result.AppendFormat("{1}</{0}>", Name, spacer);
             return result.ToString();
         }
-    }
 }

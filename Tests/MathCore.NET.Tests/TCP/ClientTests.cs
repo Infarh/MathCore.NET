@@ -1,14 +1,13 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace MathCore.NET.Tests.TCP
+namespace MathCore.NET.Tests.TCP;
+
+[TestClass, Ignore]
+public class ClientTests
 {
-    [TestClass, Ignore]
-    public class ClientTests
+    [TestMethod]
+    public void Creating()
     {
-        [TestMethod]
-        public void Creating()
-        {
 
         }
-    }
 }

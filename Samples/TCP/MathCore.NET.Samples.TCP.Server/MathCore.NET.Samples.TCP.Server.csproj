@@ -6,6 +6,7 @@
     <UseWPF>true</UseWPF>
     <StartupObject>MathCore.NET.Samples.TCP.Server.Program</StartupObject>
     <IsPackable>false</IsPackable>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>

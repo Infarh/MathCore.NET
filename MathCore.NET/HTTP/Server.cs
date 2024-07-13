@@ -1,7 +1,6 @@
-﻿namespace MathCore.NET.HTTP
-{
-    public class Server
-    {
+﻿namespace MathCore.NET.HTTP;
 
-    }
+public class Server
+{
+
 }

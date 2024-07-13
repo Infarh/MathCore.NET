@@ -1,12 +1,12 @@
 ﻿// ReSharper disable AssignmentIsFullyDiscarded
 
 // ReSharper disable once CheckNamespace
-namespace System.Threading.Tasks
+namespace System.Threading.Tasks;
+
+internal static class TaskExtensions
 {
-    internal static class TaskExtensions
+    public static Task<T> WithCancellation<T>(this Task<T> task, CancellationToken Cancel)
     {
-        public static Task<T> WithCancellation<T>(this Task<T> task, CancellationToken Cancel)
-        {
             if (!Cancel.CanBeCanceled)
                 return task;
             if (Cancel.IsCancellationRequested)
@@ -15,8 +15,8 @@ namespace System.Threading.Tasks
             return task.WithCancellationAwait(Cancel);
         }
 
-        private static async Task<T> WithCancellationAwait<T>(this Task<T> task, CancellationToken Cancel)
-        {
+    private static async Task<T> WithCancellationAwait<T>(this Task<T> task, CancellationToken Cancel)
+    {
             var tcs = new TaskCompletionSource<T>();
             using (Cancel.Register(src => ((TaskCompletionSource<T>)src).TrySetCanceled(), tcs, false))
             {
@@ -29,13 +29,13 @@ namespace System.Threading.Tasks
             }
         }
 
-        public static Task<T> FromAsync<T>(
-            this TaskFactory<T> factory,
-            Func<AsyncCallback, object, IAsyncResult> BeginAction,
-            Func<IAsyncResult, T> EndFunction,
-            object State,
-            CancellationToken Cancel)
-        {
+    public static Task<T> FromAsync<T>(
+        this TaskFactory<T> factory,
+        Func<AsyncCallback, object, IAsyncResult> BeginAction,
+        Func<IAsyncResult, T> EndFunction,
+        object State,
+        CancellationToken Cancel)
+    {
             if (Cancel.IsCancellationRequested)
                 return Task.FromCanceled<T>(Cancel);
 
@@ -47,5 +47,4 @@ namespace System.Threading.Tasks
 
             return factory.FromAsync(BeginAction, EndMethod, State);
         }
-    }
 }

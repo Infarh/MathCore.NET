@@ -1,9 +1,9 @@
-﻿namespace MathCore.NET.TCP.Extensions
+﻿namespace MathCore.NET.TCP.Extensions;
+
+internal static class ByteArrayExtensions
 {
-    internal static class ByteArrayExtensions
+    public static ushort GetIPChecksum(this byte[] buffer, ushort checksum = 0, int offset = 0, int length = 0)
     {
-        public static ushort GetIPChecksum(this byte[] buffer, ushort checksum = 0, int offset = 0, int length = 0)
-        {
             if (length == 0) length = buffer.Length - offset;
 
             var s = 0;
@@ -15,5 +15,4 @@
             }
             return (ushort)~(s + (s >> 16));
         }
-    }
 }
