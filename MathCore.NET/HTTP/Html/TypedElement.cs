@@ -2,10 +2,8 @@
 
 namespace MathCore.NET.HTTP.Html;
 
-public abstract class TypedElement : HElement
+public abstract class TypedElement(string Name, params HElementBase[] elements) : HElement(Name, elements)
 {
     /// <inheritdoc />
     public override string Name { get => base.Name; set => throw new NotSupportedException("Изменить имя типизированного элемента нельзя"); }
-
-    protected TypedElement(string Name, params HElementBase[] elements) : base(Name, elements) { }
 }

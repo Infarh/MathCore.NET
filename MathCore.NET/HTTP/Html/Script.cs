@@ -10,7 +10,7 @@ public class Script : TypedElement
 
     public string Source
     {
-        get => Attributes.FirstOrDefault(a => a.AttributeName.Equals("src", StringComparison.InvariantCultureIgnoreCase))?.Value;
+        get => Attributes.FirstOrDefault(a => a.AttributeName.Equals("src", StringComparison.InvariantCultureIgnoreCase))?.Value ?? "";
         set
         {
             var attribute = Attributes.FirstOrDefault(a => a.AttributeName.Equals("src", StringComparison.InvariantCultureIgnoreCase));
@@ -20,5 +20,6 @@ public class Script : TypedElement
     }
 
     public Script() : base("script") { }
+
     public Script(string script) : base("script", new Text(script)) { }
 }

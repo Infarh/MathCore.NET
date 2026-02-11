@@ -4,7 +4,7 @@ using MathCore.NET.TCP.Extensions;
 
 namespace MathCore.NET.TCP;
 
-public struct Header
+public struct Header(byte[] buffer, int offset = 0)
 {
     public readonly ref struct HeaderChecksum
     {
@@ -79,9 +79,9 @@ public struct Header
         internal DataOffsetAndFlags(uint data) { this.Data = data; }
     }
 
-    public readonly byte[] HeaderData;
-    private readonly int _Offset;
-    private DataOffsetAndFlags? _OffsetAndFlags;
+    public readonly byte[] HeaderData = buffer;
+    private readonly int _Offset = offset;
+    private DataOffsetAndFlags? _OffsetAndFlags = null;
 
     public int SourcePort => BitConverter.ToUInt16(HeaderData, _Offset + 0);
 
@@ -111,12 +111,5 @@ public struct Header
             HeaderData.CopyTo(result, DataOffset);
             return result;
         }
-    }
-
-    public Header(byte[] buffer, int offset = 0)
-    {
-        _OffsetAndFlags = null;
-        HeaderData = buffer;
-        _Offset = offset;
     }
 }

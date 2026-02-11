@@ -1,15 +1,10 @@
 ﻿namespace MathCore.NET.HTTP.Html;
 
-public class DataListItem : TypedElement
+public class DataListItem(HElementBase dd, HElementBase dt) : TypedElement("dd")
 {
-    public HElementBase DD { get; set; }
-    public HElementBase DT { get; set; }
+    public HElementBase DD { get; set; } = dd;
 
-    public DataListItem(HElementBase dd, HElementBase dt) : base("dd")
-    {
-        DD = dd;
-        DT = dt;
-    }
+    public HElementBase DT { get; set; } = dt;
 
     /// <inheritdoc />
     public override string ToString(int level)

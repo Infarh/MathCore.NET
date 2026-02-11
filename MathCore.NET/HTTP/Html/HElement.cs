@@ -7,31 +7,28 @@ namespace MathCore.NET.HTTP.Html;
 
 public class HElement : HElementBase, IEnumerable<HElementBase>, IEnumerable<HAttribute>
 {
-    private string _Name;
-    private List<HAttribute> _Attributes;
-    private List<HElementBase> _Elements;
-    private bool _AlwaysOpen;
-    private bool _OnlyOpen;
+    public virtual string Name { get; set; }
 
-    public virtual string Name { get => _Name; set => _Name = value; }
+    public List<HElementBase> Elements { get; set; } = new();
 
-    public List<HElementBase> Elements { get => _Elements ??= []; set => _Elements = value; }
+    public bool HasElements => Elements.Count > 0;
 
-    public bool HasElements => _Elements is { Count: > 0 };
+    public List<HAttribute> Attributes { get; set; } = new();
 
-    public List<HAttribute> Attributes { get => _Attributes ??= []; set => _Attributes = value; }
-    public bool HasAttributes => _Attributes is { Count: > 0 };
+    public bool HasAttributes => Attributes.Count > 0;
 
-    public virtual bool AlwaysOpen { get => _AlwaysOpen; set => _AlwaysOpen = value; }
-    public virtual bool OnlyOpen { get => _OnlyOpen; set => _OnlyOpen = value; }
+    public virtual bool AlwaysOpen { get; set; }
+
+    public virtual bool OnlyOpen { get; set; }
 
     public HElement(string Name, params HElementBase[] elements)
     {
-        _Name = Name;
-        if (elements.Length > 0) _Elements = elements.ToList();
+        this.Name = Name;
+        if (elements.Length > 0) Elements = elements.ToList();
     }
 
     public void Add(params HAttribute[] attribute) => Attributes.AddRange(attribute);
+
     public void Add(params HElementBase[] element) => Elements.AddRange(element);
 
     public void Add(params object[] items)
@@ -58,48 +55,48 @@ public class HElement : HElementBase, IEnumerable<HElementBase>, IEnumerable<HAt
 
     public string InnerHtml() => InnerHtml(0);
     protected string InnerHtml(int level) => HasElements
-        ? string.Join("\r\n", _Elements.Select(e => e.ToString(level + 1)))
+        ? string.Join("\r\n", Elements.Select(e => e.ToString(level + 1)))
         : string.Empty;
 
     public override string InnerText() => InnerText(0);
     protected string InnerText(int level) => HasElements
-        ? string.Join($"{GetSpacer(level + 1)}\r\n", _Elements.Select(e => e.InnerText()))
+        ? string.Join($"{GetSpacer(level + 1)}\r\n", Elements.Select(e => e.InnerText()))
         : string.Empty;
 
     /// <inheritdoc />
     public override string ToString(int level)
     {
         var spacer = GetSpacer(level);
-        var result = new StringBuilder($"{spacer}<{_Name}");
-        if (HasAttributes) result.AppendFormat(" {0}", string.Join(" ", _Attributes));
+        var result = new StringBuilder($"{spacer}<{Name}");
+        if (HasAttributes) result.AppendFormat(" {0}", string.Join(" ", Attributes));
 
         if (!HasElements)
             return OnlyOpen
                 ? $"{result}>"
                 : AlwaysOpen
-                    ? $"{result}></{_Name}>"
+                    ? $"{result}></{Name}>"
                     : $"{result}/>";
 
-        if (_Elements.Count == 1)
+        if (Elements.Count == 1)
         {
             var inner_text = InnerHtml(level);
             if (!inner_text.Contains("\r\n"))
-                return $"{result}>{inner_text.Trim()}</{_Name}>";
+                return $"{result}>{inner_text.Trim()}</{Name}>";
         }
 
         result.AppendLine(">");
         result.AppendLine(InnerHtml(level));
-        result.AppendFormat("{1}</{0}>", _Name, spacer);
+        result.AppendFormat("{1}</{0}>", Name, spacer);
 
         return result.ToString();
     }
 
     /// <inheritdoc />
-    public IEnumerator<HElementBase> GetEnumerator() => _Elements.GetEnumerator();
+    public IEnumerator<HElementBase> GetEnumerator() => Elements.GetEnumerator();
 
     /// <inheritdoc />
-    IEnumerator IEnumerable.GetEnumerator() => ((IEnumerable)_Elements).GetEnumerator();
+    IEnumerator IEnumerable.GetEnumerator() => ((IEnumerable)Elements).GetEnumerator();
 
     /// <inheritdoc />
-    IEnumerator<HAttribute> IEnumerable<HAttribute>.GetEnumerator() => _Attributes.GetEnumerator();
+    IEnumerator<HAttribute> IEnumerable<HAttribute>.GetEnumerator() => Attributes.GetEnumerator();
 }

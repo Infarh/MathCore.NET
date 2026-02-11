@@ -2,9 +2,7 @@
 
 namespace MathCore.NET.HTTP.Events;
 
-public class RequestReceivedEventArgs
+public class RequestReceivedEventArgs(HttpListenerContext Context)
 {
-    public HttpListenerContext Context { get; }
-
-    public RequestReceivedEventArgs(HttpListenerContext Context) => this.Context = Context;
+    public HttpListenerContext Context { get; } = Context;
 }

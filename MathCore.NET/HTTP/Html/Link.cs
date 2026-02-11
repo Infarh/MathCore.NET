@@ -11,7 +11,7 @@ public class Link : TypedElement
 
     public string Relation
     {
-        get => Attributes.FirstOrDefault(a => a.AttributeName.Equals("rel", StringComparison.InvariantCultureIgnoreCase))?.Value;
+        get => Attributes.FirstOrDefault(a => a.AttributeName.Equals("rel", StringComparison.InvariantCultureIgnoreCase))?.Value ?? "";
         set
         {
             var attribute = Attributes.FirstOrDefault(a => a.AttributeName.Equals("rel", StringComparison.InvariantCultureIgnoreCase));
@@ -22,7 +22,7 @@ public class Link : TypedElement
 
     public string Reference
     {
-        get => Attributes.FirstOrDefault(a => a.AttributeName.Equals("href", StringComparison.InvariantCultureIgnoreCase))?.Value;
+        get => Attributes.FirstOrDefault(a => a.AttributeName.Equals("href", StringComparison.InvariantCultureIgnoreCase))?.Value ?? "";
         set
         {
             var attribute = Attributes.FirstOrDefault(a => a.AttributeName.Equals("href", StringComparison.InvariantCultureIgnoreCase));
@@ -35,7 +35,7 @@ public class Link : TypedElement
 
     public Link(string relation, string href) : base("link")
     {
-        List<HAttribute> attributes = null;
+        List<HAttribute>? attributes = null;
         if (!string.IsNullOrWhiteSpace(relation)) (attributes = Attributes).Add(new("rel", relation));
         if (!string.IsNullOrWhiteSpace(href)) (attributes ?? Attributes).Add(new("href", href));
     }

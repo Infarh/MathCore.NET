@@ -2,7 +2,4 @@
 
 namespace MathCore.NET.HTTP.Html;
 
-public class MenuList : TypedElement
-{
-    public MenuList(params ListItem[] items) : base("menu", items.Cast<HElementBase>().ToArray()) { }
-}
+public class MenuList(params ListItem[] items) : TypedElement("menu", [.. items.Cast<HElementBase>()]);

@@ -1,10 +1,8 @@
 ﻿namespace MathCore.NET.HTTP.Html;
 
-public class Text : HElementBase
+public class Text(string text) : HElementBase
 {
-    public string Value { get; set; }
-
-    public Text(string text) => Value = text;
+    public string Value { get; set; } = text;
 
     /// <inheritdoc />
     public override string InnerText() => Value;

@@ -10,23 +10,18 @@ namespace MathCore.NET.TCP;
 
 /// <summary>Реализация IFormatter на основе простой текстовой сериализации</summary>
 /// <remarks>Поддерживает базовые типы и объекты с публичными свойствами</remarks>
-public class JsonFormatter : IFormatter
+/// <remarks>
+/// Инициализирует новый экземпляр JsonFormatter с указанной кодировкой
+/// </remarks>
+/// <param name="Encoding">Кодировка для работы со строками</param>
+public class JsonFormatter(Encoding Encoding) : IFormatter
 {
-    private readonly Encoding _encoding;
+    private readonly Encoding _encoding = Encoding ?? Encoding.UTF8;
 
     /// <summary>
     /// Инициализирует новый экземпляр JsonFormatter с кодировкой UTF-8
     /// </summary>
     public JsonFormatter() : this(Encoding.UTF8) { }
-
-    /// <summary>
-    /// Инициализирует новый экземпляр JsonFormatter с указанной кодировкой
-    /// </summary>
-    /// <param name="Encoding">Кодировка для работы со строками</param>
-    public JsonFormatter(Encoding Encoding)
-    {
-        _encoding = Encoding ?? Encoding.UTF8;
-    }
 
     /// <inheritdoc />
     public SerializationBinder? Binder { get; set; }

@@ -1,3 +1,3 @@
 ﻿namespace MathCore.NET.HTTP.Html;
 
-public class Footer : TypedElement { public Footer(params HElementBase[] elements) : base("footer", elements) { } }
+public class Footer(params HElementBase[] elements) : TypedElement("footer", elements);

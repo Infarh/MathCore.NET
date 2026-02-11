@@ -4,20 +4,16 @@ using System.Net;
 namespace MathCore.NET.UDP.Events;
 
 /// <summary>Аргументы события получения данных</summary>
-public sealed class DataReceivedEventArgs : EventArgs
+/// <remarks>Новый аргумент получения данных</remarks>
+/// <param name="Data">Полученные данные</param>
+/// <param name="EndPoint">Точка сети - источник данных</param>
+public sealed class DataReceivedEventArgs(byte[]? Data, IPEndPoint? EndPoint) : EventArgs
 {
     /// <summary>Полученные данные</summary>
-    public readonly byte[]? Data;
+    public readonly byte[]? Data = Data;
     /// <summary>Точка сети - источник данных</summary>
-    public readonly IPEndPoint? EndPoint;
-    /// <summary>Новый аргумент получения данных</summary>
-    /// <param name="Data">Полученные данные</param>
-    /// <param name="EndPoint">Точка сети - источник данных</param>
-    public DataReceivedEventArgs(byte[]? Data, IPEndPoint? EndPoint)
-    {
-        this.Data = Data;
-        this.EndPoint = EndPoint;
-    }
+    public readonly IPEndPoint? EndPoint = EndPoint;
+
     /// <summary>Оператор неявного приведения типов к типу данных "массив байт"</summary>
     /// <param name="Arg">Аргумент события получения данных</param>
     /// <returns>Массив байт</returns>

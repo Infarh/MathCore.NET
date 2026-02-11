@@ -14,7 +14,7 @@ public class Page
 
     public string Title
     {
-        get => _Head.Elements.OfType<HElement>().FirstOrDefault(e => e.Name == "title")?.InnerText();
+        get => _Head.Elements.OfType<HElement>().FirstOrDefault(e => e.Name == "title")?.InnerText() ?? "";
         set
         {
             var title = _Head.Elements.OfType<Title>().FirstOrDefault();

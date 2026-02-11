@@ -11,12 +11,17 @@ namespace MathCore.NET.TCP.Events;
 
 /// <summary>Параметры передачи данных</summary>
 /// <remarks>Содержит данные в виде массива символов.</remarks>
-public class DataEventArgs : EventArgs
+/// <remarks>Конструктор из символьного массива</remarks>
+/// <param name="Data">Данные</param>
+/// <param name="ReadedDataLength">Число прочитанных байт</param>
+/// <param name="DataEncoding">Кодировка текста</param>
+/// <param name="DataFormatter">Объект десериализации</param>
+public class DataEventArgs(byte[] Data, int ReadedDataLength, Encoding DataEncoding, IFormatter DataFormatter) : EventArgs
 {
-    private readonly IFormatter _DataFormatter;
-    private readonly byte[] _Data;
-    private readonly int _ReadedDataLength;
-    private readonly Encoding _DataEncoding;
+    private readonly IFormatter _DataFormatter = DataFormatter;
+    private readonly byte[] _Data = Data;
+    private readonly int _ReadedDataLength = ReadedDataLength;
+    private readonly Encoding _DataEncoding = DataEncoding;
 
     /// <summary>Данные в виде массива байт</summary>
     public IReadOnlyList<byte> Data => _Data;
@@ -39,19 +44,6 @@ public class DataEventArgs : EventArgs
     /// <param name="DataFormatter">Объект десериализации</param>
     public DataEventArgs(byte[] Data, Encoding DataEncoding, IFormatter DataFormatter)
         : this(Data, Data.Length, DataEncoding, DataFormatter) { }
-
-    /// <summary>Конструктор из символьного массива</summary>
-    /// <param name="Data">Данные</param>
-    /// <param name="ReadedDataLength">Число прочитанных байт</param>
-    /// <param name="DataEncoding">Кодировка текста</param>
-    /// <param name="DataFormatter">Объект десериализации</param>
-    public DataEventArgs(byte[] Data, int ReadedDataLength, Encoding DataEncoding, IFormatter DataFormatter)
-    {
-        _Data = Data;
-        _ReadedDataLength = ReadedDataLength;
-        _DataEncoding = DataEncoding;
-        _DataFormatter = DataFormatter;
-    }
 
     protected object Deserialize()
     {

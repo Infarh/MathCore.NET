@@ -16,7 +16,9 @@ using MathCore.NET.TCP.Events;
 
 namespace MathCore.NET.TCP;
 
-public class Server : IDisposable
+/// <summary>Конструктор с указанием прослушиваемого порта</summary>
+/// <param name="Port">Прослушиваемый порт</param>
+public class Server(int Port) : IDisposable
 {
     #region События
 
@@ -91,7 +93,10 @@ public class Server : IDisposable
     private readonly object _SyncRoot = new();
 
     /// <summary>Поле, содержащее текущий прослушиваемый порт</summary>
-    protected readonly int _Port;
+    protected readonly int _Port = Port is < 1 or > 65535
+        ? throw new ArgumentOutOfRangeException(nameof(Port), Port,
+            $"Порт должен быть в пределах от 1 до 65535, а указан {Port}")
+        : Port;
 
     protected readonly Encoding _DataEncoding = Encoding.UTF8;
 
@@ -124,15 +129,7 @@ public class Server : IDisposable
     public IPAddress AddressType => _AddressType;
 
     #endregion
-
     #region Конструктор / диструктор
-
-    /// <summary>Конструктор с указанием прослушиваемого порта</summary>
-    /// <param name="Port">Прослушиваемый порт</param>
-    public Server(int Port) => _Port = Port is < 1 or > 65535
-        ? throw new ArgumentOutOfRangeException(nameof(Port), Port,
-            $"Порт должен быть в пределах от 1 до 65535, а указан {Port}")
-        : Port;
 
     /// <summary>Конструктор с указанием прослушиваемого порта и типа обслуживаемых подсетей</summary>
     /// <param name="Port">Прослушиваемый порт</param>

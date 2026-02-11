@@ -2,7 +2,4 @@
 
 namespace MathCore.NET.HTTP.Html;
 
-public class DataList : TypedElement
-{
-    public DataList(params DataListItem[] items) : base("dd", items.Cast<HElementBase>().ToArray()) { }
-}
+public class DataList(params DataListItem[] items) : TypedElement("dd", [.. items.Cast<HElementBase>()]);

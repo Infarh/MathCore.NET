@@ -3,12 +3,10 @@
 namespace MathCore.NET.TCP.Events;
 
 /// <summary>Параметры события работы с клиентом</summary>
-public class ClientEventArgs : EventArgs
+/// <remarks>Инициализация нового экземпляра <see cref="ClientEventArgs"/></remarks>
+/// <param name="Client">Клиент</param>
+public class ClientEventArgs(Client Client) : EventArgs
 {
     /// <summary>Клиент</summary>
-    public Client Client { get; }
-
-    /// <summary>Инициализация нового экземпляра <see cref="ClientEventArgs"/></summary>
-    /// <param name="Client">Клиент</param>
-    public ClientEventArgs(Client Client) => this.Client = Client;
+    public Client Client { get; } = Client;
 }

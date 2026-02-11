@@ -8,9 +8,9 @@ namespace MathCore.NET.HTTP.Html;
 
 public class MarkedList : TypedElement
 {
-    private IEnumerable Items { get; set; }
+    private IEnumerable Items { get; set; } = null!;
 
-    public MarkedList(params ListItem[] items) : base("ul", items.Cast<HElementBase>().ToArray()) { }
+    public MarkedList(params ListItem[] items) : base("ul", [.. items.Cast<HElementBase>()]) { }
 
     public MarkedList(IEnumerable items) : base("ul") => Items = items;
 

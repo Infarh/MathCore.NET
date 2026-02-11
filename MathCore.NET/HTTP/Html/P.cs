@@ -1,3 +1,3 @@
 ﻿namespace MathCore.NET.HTTP.Html;
 
-public class P : TypedElement { public P(params HElementBase[] elements) : base("p", elements) { } }
+public class P(params HElementBase[] elements) : TypedElement("p", elements);

@@ -4,8 +4,11 @@ namespace MathCore.NET.HTTP.Html;
 
 public abstract class HElementBase
 {
-    public static string SpacerPattern { get; set; } = "    ";
-    protected static string GetSpacer(int level) => level <= 0 ? string.Empty : string.Concat(Enumerable.Repeat(SpacerPattern, level));
+    public static string IdentPattern { get; set; } = "    ";
+
+    protected static string GetSpacer(int level) => level <= 0
+        ? string.Empty
+        : string.Concat(Enumerable.Repeat(IdentPattern, level));
 
     public abstract string InnerText();
 

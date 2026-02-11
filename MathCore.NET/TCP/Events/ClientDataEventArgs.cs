@@ -1,8 +1,6 @@
 ﻿namespace MathCore.NET.TCP.Events;
 
-public class ClientDataEventArgs : ClientEventArgs
+public class ClientDataEventArgs(Client Client, DataEventArgs Data) : ClientEventArgs(Client)
 {
-    public DataEventArgs ClientData { get; }
-
-    public ClientDataEventArgs(Client Client, DataEventArgs Data) : base(Client) => ClientData = Data;
+    public DataEventArgs ClientData { get; } = Data;
 }

@@ -5,7 +5,7 @@ using System.Text.RegularExpressions;
 
 namespace MathCore.NET.HTTP;
 
-public class Route
+public class Route(Regex regex, Action<RequestInfo> action)
 {
     private static readonly Regex __RouteRegexTranslator = new(@"\{(?<name>\w+)\}", RegexOptions.Compiled);
 
@@ -14,20 +14,14 @@ public class Route
             __RouteRegexTranslator.Replace(route, m => $@"(?<{m.Groups["name"]}>\w+)"),
             IgnoreCase ? RegexOptions.IgnoreCase : RegexOptions.None);
 
-    private Regex _Regex;
-    private Action<RequestInfo> _Action;
+    private Regex _Regex = regex;
+    private Action<RequestInfo> _Action = action;
 
     public string Regex { get => _Regex.ToString(); set => _Regex = CreateRegex(value, true); }
     public Action<RequestInfo> Action { get => _Action; set => _Action = value; }
 
     public Route(string route, Action<RequestInfo> action, bool IgnoreCase = true)
         : this(CreateRegex(route, IgnoreCase), action) { }
-
-    public Route(Regex regex, Action<RequestInfo> action)
-    {
-        _Regex = regex;
-        _Action = action;
-    }
 
     public bool Execute(HttpListenerContext context, WebServer Server)
     {
