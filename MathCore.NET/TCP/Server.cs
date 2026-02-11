@@ -21,7 +21,7 @@ public class Server : IDisposable
     #region События
 
     /// <summary>Событие, возникающие при запуске сервера</summary>
-    public event EventHandler Started;
+    public event EventHandler? Started;
 
     /// <summary>Метод вызова события "при запуске сервера"</summary>
     protected virtual void OnStarted(EventArgs e) => Started?.Invoke(this, e);
@@ -29,53 +29,49 @@ public class Server : IDisposable
     private void OnStarted() => OnStarted(EventArgs.Empty);
 
     /// <summary>Событие, возникающие при остановке сервера</summary>
-    public event EventHandler Stopped;
+    public event EventHandler? Stopped;
 
     /// <summary>Метод вызова события "при остановке сервера"</summary>
     protected virtual void OnStopped(EventArgs e) => Stopped?.Invoke(this, e);
+
     private void OnStopped() => OnStopped(EventArgs.Empty);
 
     /// <summary>Событие, возникающие при подключении нового клиента</summary>
-    public event EventHandler<ClientEventArgs> ClientConnected;
+    public event EventHandler<ClientEventArgs>? ClientConnected;
 
     /// <summary>Метод вызова события "при подключении клиента"</summary>
     /// <param name="e">Подключившийся клиент</param>
-    protected virtual void OnClientConnected(ClientEventArgs e) =>
-        ClientConnected?.Invoke(this, e);
+    protected virtual void OnClientConnected(ClientEventArgs e) => ClientConnected?.Invoke(this, e);
 
-    private void OnClientConnected(Client Client) =>
-        OnClientConnected(new ClientEventArgs(Client));
+    private void OnClientConnected(Client Client) => OnClientConnected(new ClientEventArgs(Client));
 
     /// <summary>Событие, возникающие при отключении клиента</summary>
-    public event EventHandler<ClientEventArgs> ClientDisconnected;
+    public event EventHandler<ClientEventArgs>? ClientDisconnected;
 
     /// <summary>Метод вызова события "при отключении клиента"</summary>
     /// <param name="e">Отключившийся клиент</param>
-    protected virtual void OnClientDisconnected(ClientEventArgs e) =>
-        ClientDisconnected?.Invoke(this, e);
+    protected virtual void OnClientDisconnected(ClientEventArgs e) => ClientDisconnected?.Invoke(this, e);
 
-    private void OnClientDisconnected(Client Client) =>
-        OnClientDisconnected(new ClientEventArgs(Client));
+    private void OnClientDisconnected(Client Client) => OnClientDisconnected(new ClientEventArgs(Client));
 
     /// <summary>Событие, возникающие при получении данных подключённым клиентом</summary>
-    public event EventHandler<ClientDataEventArgs> DataReceived;
+    public event EventHandler<ClientDataEventArgs>? DataReceived;
 
     /// <summary>Метод вызова события "при получении данных"</summary>
     protected virtual void OnDataReceived(ClientDataEventArgs e) => DataReceived?.Invoke(this, e);
 
     /// <summary>Событие, возникающие при отправке данных подключённым клиентом</summary>
-    public event EventHandler<ClientDataEventArgs> DataSent;
+    public event EventHandler<ClientDataEventArgs>? DataSent;
 
     /// <summary>Метод вызова события "при передаче данных"</summary>
     protected virtual void OnDataSend(ClientDataEventArgs e) => DataSent?.Invoke(this, e);
 
     /// <param name="Client">Клиент, инициировавший передачу</param>
     /// <param name="ClientArgs">Параметры передачи</param>
-    private void OnDataSend(Client Client, DataEventArgs ClientArgs) =>
-        OnDataSend(new(Client, ClientArgs));
+    private void OnDataSend(Client Client, DataEventArgs ClientArgs) => OnDataSend(new(Client, ClientArgs));
 
     /// <summary>Событие, возникающие при возникновении ошибки</summary>
-    public event EventHandler<ErrorEventArgs> Error;
+    public event EventHandler<ErrorEventArgs>? Error;
 
     /// <summary>Метод вызова события "при ошибке"</summary>
     /// <param name="e">Возникшая ошибка</param>
@@ -105,13 +101,13 @@ public class Server : IDisposable
     /// <summary>Основной элемент сервера, производящий прослушивание порта и подключения входящих клиентов</summary>
     protected TcpListener _Listener;
 
-    private CancellationTokenSource _ListenProcessCancellation;
+    private CancellationTokenSource _ListenProcessCancellation = null!;
 
     /// <summary>Поле, содержащее информацию о активности сервера</summary>
     protected bool _Enabled;
 
     /// <summary>Список подключённых клиентов</summary>
-    protected ConcurrentDictionary<TcpClient, Client> _ClientsDictionary;
+    protected ConcurrentDictionary<TcpClient, Client> _ClientsDictionary = null!;
 
     #endregion
 
@@ -124,8 +120,7 @@ public class Server : IDisposable
     /// <summary>Прослушиваемый порт</summary>
     public int Port => _Port;
 
-    /// <summary>
-    /// Система IP адресов</summary>
+    /// <summary>Система IP адресов</summary>
     public IPAddress AddressType => _AddressType;
 
     #endregion
@@ -134,7 +129,7 @@ public class Server : IDisposable
 
     /// <summary>Конструктор с указанием прослушиваемого порта</summary>
     /// <param name="Port">Прослушиваемый порт</param>
-    public Server(int Port) => _Port = Port < 1 || Port > 65535
+    public Server(int Port) => _Port = Port is < 1 or > 65535
         ? throw new ArgumentOutOfRangeException(nameof(Port), Port,
             $"Порт должен быть в пределах от 1 до 65535, а указан {Port}")
         : Port;
@@ -154,25 +149,27 @@ public class Server : IDisposable
         //Если сервер активен, выходим
         if (_Enabled) return;
         lock (_SyncRoot)
+        {
             if (_Enabled) return;
-            else
+
+            _Listener = new(_AddressType, _Port);
+            try
             {
-                _Listener = new(_AddressType, _Port);
-                try
-                {
-                    _Listener.Start();
-                }
-                catch (SocketException error)
-                {
-                    Stop();
-                    OnError(new(error));
-                    return;
-                }
-                _Enabled = true;
-                _ClientsDictionary = new();
-                _ListenProcessCancellation = new();
-                ListenAsync(_Listener, _ListenProcessCancellation.Token);
+                _Listener.Start();
             }
+            catch (SocketException error)
+            {
+                Stop();
+                OnError(new(error));
+                return;
+            }
+
+            _Enabled = true;
+
+            _ClientsDictionary = new();
+            _ListenProcessCancellation = new();
+            _ = ListenAsync(_Listener, _ListenProcessCancellation.Token);
+        }
         OnStarted();
     }
 
@@ -182,31 +179,31 @@ public class Server : IDisposable
         //Если сервер неактивен, то выходим
         if (!_Enabled) return;
         lock (_SyncRoot)
+        {
             if (!_Enabled) return;
-            else
+
+            //Устанавливаем признак активности сервера в состояние "отключён"
+            _Enabled = false;
+            _ListenProcessCancellation.Cancel();
+            _ListenProcessCancellation.Dispose();
+
+            //Останавливаем слушателя
+            _Listener.Stop();
+
+            if (_ClientsDictionary != null)
             {
-                //Устанавливаем признак активности сервера в состояние "отключён"
-                _Enabled = false;
-                _ListenProcessCancellation.Cancel();
-                _ListenProcessCancellation.Dispose();
-
-                //Останавливаем слушателя
-                _Listener.Stop();
-
-                if (_ClientsDictionary != null)
+                foreach (var (_, client) in _ClientsDictionary)
                 {
-                    foreach (var (_, client) in _ClientsDictionary)
-                    {
-                        RemoveEventHandlers(client);
-                        client.Dispose();
-                    }
-                    _ClientsDictionary.Clear();
+                    RemoveEventHandlers(client);
+                    client.Dispose();
                 }
-
-                //Обнуляем ссылки
-                _Listener = null;
-                _ListenProcessCancellation = null;
+                _ClientsDictionary.Clear();
             }
+
+            //Обнуляем ссылки
+            _Listener = null!;
+            _ListenProcessCancellation = null!;
+        }
         OnStopped();
     }
 
@@ -214,11 +211,11 @@ public class Server : IDisposable
 
     #region Обработка подключений
 
-    protected virtual async void ListenAsync(TcpListener Listener, CancellationToken Cancel)
+    protected virtual async Task ListenAsync(TcpListener Listener, CancellationToken Cancel)
     {
         try
         {
-            TcpClient client = null;
+            TcpClient? client = null;
             while (true)
             {
                 Cancel.ThrowIfCancellationRequested();
@@ -257,13 +254,22 @@ public class Server : IDisposable
         client.DataEncoding = _DataEncoding;
 
         //Добавляем клиента в список
-
         _ClientsDictionary[Client] = client;
 
-        if (!Client.Connected)
-            await client.StartAsync().ConfigureAwait(false);
+        try
+        {
+            if (!Client.Connected)
+                await client.StartAsync().ConfigureAwait(false);
 
-        OnClientConnected(client);
+            OnClientConnected(client);
+        }
+        catch (Exception error)
+        {
+            RemoveEventHandlers(client);
+            _ClientsDictionary.TryRemove(Client, out _);
+            client.Dispose();
+            OnError(new ClientErrorEventArgs(client, error));
+        }
     }
 
     private void RemoveEventHandlers(Client Client)
@@ -290,8 +296,7 @@ public class Server : IDisposable
     /// <summary>Метод обработки событий подключённых клиентов "при отправке данных"</summary>
     /// <param name="Sender">Клиент, отправивший данные</param>
     /// <param name="Args">Параметры</param>
-    private void OnClientDataSent(object Sender, DataEventArgs Args) =>
-        OnDataSend((Client)Sender, Args);
+    private void OnClientDataSent(object Sender, DataEventArgs Args) => OnDataSend((Client)Sender, Args);
 
     /// <summary>Метод обработки событий подключённых клиентов "при ошибке"</summary>
     /// <param name="Sender">Клиент, совершивший ошибку</param>
@@ -302,8 +307,7 @@ public class Server : IDisposable
     /// <summary>Метод обработки событий подключённых клиентов "при получении данных"</summary>
     /// <param name="Sender">Клиент, получивший данные</param>
     /// <param name="Args">Параметры</param>
-    private void OnClientDataReceived(object Sender, DataEventArgs Args) =>
-        OnDataReceived(new((Client)Sender, Args));
+    private void OnClientDataReceived(object Sender, DataEventArgs Args) => OnDataReceived(new((Client)Sender, Args));
 
     /// <summary>Метод обработки событий подключённых клиентов "при отключении"</summary>
     /// <param name="Sender">Отключившийся клиент</param>
@@ -334,7 +338,7 @@ public class Server : IDisposable
         _Disposed = true;
         Stop();
         _ListenProcessCancellation?.Dispose();
-        _ClientsDictionary.Clear();
+        _ClientsDictionary?.Clear();
     }
 
     #endregion

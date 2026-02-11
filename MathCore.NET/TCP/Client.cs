@@ -3,7 +3,6 @@ using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Runtime.Serialization;
-using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -31,18 +30,18 @@ public class Client : IDisposable
     #region События
 
     /// <summary>Событие соединения клиента с сервером</summary>
-    public event EventHandler Connected;
+    public event EventHandler? Connected;
 
     /// <summary>Генерация события присоединения клиента к серверу</summary>
     protected virtual void OnConnected() => Connected?.Invoke(this, EventArgs.Empty);
 
     /// <summary>Событие, возникающие при потери связи</summary>
-    public event EventHandler Disconnected;
+    public event EventHandler? Disconnected;
 
     protected virtual void OnDisconnected() => Disconnected?.Invoke(this, EventArgs.Empty);
 
-    /// <summary>Событие, возникающие при ошибке</summary>
-    public event EventHandler<ErrorEventArgs> Error;
+    /// <summary>Событие, возникающее при ошибке</summary>
+    public event EventHandler<ErrorEventArgs>? Error;
 
     /// <param name="Error">Возникшая ошибка</param>
     protected virtual void OnError(Exception Error)
@@ -54,8 +53,8 @@ public class Client : IDisposable
     }
 
 
-    /// <summary>Событие, возникающие при появлении данных в сетевом потоке</summary>
-    public event EventHandler<DataEventArgs> DataReceived;
+    /// <summary>Событие, возникающее при появлении данных в сетевом потоке</summary>
+    public event EventHandler<DataEventArgs>? DataReceived;
 
     protected virtual void OnDataReceived(DataEventArgs e) => DataReceived?.Invoke(this, e);
 
@@ -64,7 +63,7 @@ public class Client : IDisposable
     private void OnDataReceived(byte[] Data, int ReadedDataLength) => OnDataReceived(new(Data, ReadedDataLength, _DataEncoding, _DataFormatter));
 
     /// <summary>Событие, возникающие при отправке данных</summary>
-    public event EventHandler<DataEventArgs> DataSent;
+    public event EventHandler<DataEventArgs>? DataSent;
 
     protected virtual void OnDataSent(DataEventArgs e) => DataSent?.Invoke(this, e);
 
@@ -76,10 +75,10 @@ public class Client : IDisposable
 
     private readonly object _SyncRoot = new();
 
-    protected TcpClient _Client;
+    protected TcpClient _Client = null!;
 
     /// <summary>Сетевой поток данных</summary>
-    protected NetworkStream _ClientStream;
+    protected NetworkStream _ClientStream = null!;
 
     protected Encoding _DataEncoding = Encoding.UTF8;
 
@@ -92,9 +91,9 @@ public class Client : IDisposable
 
     protected bool _Enabled;
 
-    protected IFormatter _DataFormatter = new BinaryFormatter();
+    protected IFormatter _DataFormatter = new JsonFormatter();
 
-    private CancellationTokenSource _ConnectionCancellation;
+    private CancellationTokenSource _ConnectionCancellation = null!;
 
     #endregion
 
@@ -150,16 +149,13 @@ public class Client : IDisposable
     public Client(string Host, int Port)
     {
         //Если значение порта недопустимо, то генерируем исключительную ситуацию
-        if (Port < 1 || Port > 65535)
+        if (Port is < 1 or > 65535)
             throw new ArgumentOutOfRangeException(nameof(Port), Port, $"Порт должен быть в пределах от 1 до 65535, а указан {Port}");
         _Host = Host;
         _Port = Port;
     }
 
-    /// <summary>
-    /// Конструктор клиента по указанному адресу сервера,
-    /// порту и состоянию клиента после его создания.
-    /// </summary>
+    /// <summary>Конструктор клиента по указанному адресу сервера, порту и состоянию клиента после его создания</summary>
     /// <param name="Host">Адрес удалённого сервера</param>
     /// <param name="Port">Порт</param>
     /// <param name="Enable">
@@ -169,7 +165,7 @@ public class Client : IDisposable
     public Client(string Host, int Port, bool Enable)
     {
         //Если значение порта недопустимо, то генерируем исключительную ситуацию
-        if (Port < 1 || Port > 65535)
+        if (Port is < 1 or > 65535)
             throw new ArgumentOutOfRangeException(nameof(Port), Port, $"Порт должен быть в пределах от 1 до 65535, а указан {Port}");
         _Host = Host;
         _Port = Port;
@@ -227,7 +223,7 @@ public class Client : IDisposable
                 }
                 _Enabled = true;
             }
-        CheckConnectionAsync(_ConnectionCancellation.Token);
+        _ = CheckConnectionAsync(_ConnectionCancellation.Token);
         OnConnected();
     }
 
@@ -237,33 +233,34 @@ public class Client : IDisposable
         //Если соединение уже установлено, то возврат
         if (_Enabled) return;
         Monitor.Enter(_SyncRoot);
-        if (_Enabled)
-        {
-            Monitor.Exit(_SyncRoot);
-            return;
-        }
-
-        _Client ??= new();
-        _ConnectionCancellation = new();
         try
         {
-            await _Client.ConnectAsync(_Host, _Port).ConfigureAwait(false);
-            _ClientStream = _Client.GetStream();
-            Monitor.Exit(_SyncRoot);
+            if (_Enabled) return;
+
+            _Client ??= new();
+            _ConnectionCancellation = new();
+            try
+            {
+                await _Client.ConnectAsync(_Host, _Port).ConfigureAwait(false);
+                _ClientStream = _Client.GetStream();
+            }
+            catch (SocketException error)
+            {
+                // ReSharper disable once CommentTypo
+                if (error.ErrorCode == 10061) //WSAECONNREFUSED = 10061
+                    OnDisconnected();
+                OnError(error);
+                return;
+            }
+
+            _Enabled = true;
+            _ = CheckConnectionAsync(_ConnectionCancellation.Token);
+            OnConnected();
         }
-        catch (SocketException error)
+        finally
         {
             Monitor.Exit(_SyncRoot);
-            // ReSharper disable once CommentTypo
-            if (error.ErrorCode == 10061) //WSAECONNREFUSED = 10061
-                OnDisconnected();
-            OnError(error);
-            return;
         }
-
-        _Enabled = true;
-        CheckConnectionAsync(_ConnectionCancellation.Token);
-        OnConnected();
     }
 
     /// <summary>Метод остановки клиента</summary>
@@ -272,25 +269,27 @@ public class Client : IDisposable
         //Если связь не была установлена, то возврат
         if (!_Enabled) return;
         lock (_SyncRoot)
+        {
             if (!_Enabled) return;
-            else
-                try
-                {
-                    //Сбрасываем флаг подключения
-                    _Enabled = false;
-                    _ConnectionCancellation.Cancel();
-                    _ConnectionCancellation.Dispose();
-                    _ConnectionCancellation = null;
-                    //Начинаем асинхронный процесс отключения
-                    _Client.Client.Disconnect(false);
-                    _ClientStream.Close();
-                    _ClientStream = null;
-                    _Client = null;
-                }
-                catch (Exception error)
-                {
-                    OnError(error);
-                }
+
+            try
+            {
+                //Сбрасываем флаг подключения
+                _Enabled = false;
+                _ConnectionCancellation.Cancel();
+                _ConnectionCancellation.Dispose();
+                _ConnectionCancellation = null!;
+                //Начинаем асинхронный процесс отключения
+                _Client.Client.Disconnect(false);
+                _ClientStream.Close();
+                _ClientStream = null!;
+                _Client = null!;
+            }
+            catch (Exception error)
+            {
+                OnError(error);
+            }
+        }
         OnDisconnected();
     }
 
@@ -300,32 +299,35 @@ public class Client : IDisposable
         //Если связь не была установлена, то возврат
         if (!_Enabled) return;
         Monitor.Enter(_SyncRoot);
-        if (_Enabled)
-        {
-            Monitor.Exit(_SyncRoot);
-            return;
-        }
-
         try
         {
+            if (!_Enabled) return;
+
             _Enabled = false;
             _ConnectionCancellation.Cancel();
             _ConnectionCancellation.Dispose();
-            _ConnectionCancellation = null;
-            await _Client.Client.DisconnectAsync().ConfigureAwait(false);
-            _ClientStream.Close();
-            _ClientStream.Dispose();
-            _Client.Dispose();
-            _ClientStream = null;
-            _Client = null;
-            Monitor.Exit(_SyncRoot);
+            _ConnectionCancellation = null!;
+
+            try
+            {
+                await _Client.Client.DisconnectAsync().ConfigureAwait(false);
+            }
+            catch (Exception error)
+            {
+                OnError(error);
+            }
+
+            _ClientStream?.Close();
+            _ClientStream?.Dispose();
+            _Client?.Dispose();
+            _ClientStream = null!;
+            _Client = null!;
         }
-        catch (Exception error)
+        finally
         {
             Monitor.Exit(_SyncRoot);
-            OnError(error);
-            return;
         }
+
         OnDisconnected();
     }
 
@@ -333,7 +335,7 @@ public class Client : IDisposable
 
     #region Отправка / получение
 
-    protected async void CheckConnectionAsync(CancellationToken Cancel)
+    protected async Task CheckConnectionAsync(CancellationToken Cancel)
     {
         if (_ClientStream.CanRead)
         {
@@ -470,8 +472,12 @@ public class Client : IDisposable
         Monitor.Enter(stream);
         try
         {
-            await Task.Run(() => DataFormatter.Serialize(stream, Object), Cancel)
-               .ConfigureAwait(false);
+            DataFormatter.Serialize(stream, Object);
+            await Task.CompletedTask.ConfigureAwait(false);
+        }
+        catch (Exception error)
+        {
+            OnError(error);
         }
         finally
         {
