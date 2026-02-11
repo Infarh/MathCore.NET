@@ -1,0 +1,15 @@
+<Solution>
+  <Folder Name="/Samples/" />
+  <Folder Name="/Samples/TCP/">
+    <Project Path="Samples/TCP/MathCore.NET.Samples.TCP.Client/MathCore.NET.Samples.TCP.Client.csproj" />
+    <Project Path="Samples/TCP/MathCore.NET.Samples.TCP.Server/MathCore.NET.Samples.TCP.Server.csproj" />
+  </Folder>
+  <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
+  </Folder>
+  <Folder Name="/Tests/">
+    <Project Path="Tests/MathCore.NET.TestConsole/MathCore.NET.TestConsole.csproj" />
+    <Project Path="Tests/MathCore.NET.Tests/MathCore.NET.Tests.csproj" />
+  </Folder>
+  <Project Path="MathCore.NET/MathCore.NET.csproj" />
+</Solution>
