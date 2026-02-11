@@ -6,14 +6,22 @@ using MathCore.NET.Extensions;
 
 namespace MathCore.NET.HTTP.Html;
 
+/// <summary>HTML-элемент ul (ненумерованный список)</summary>
 public class MarkedList : TypedElement
 {
+    /// <summary>Элементы для отображения в виде списка</summary>
     private IEnumerable Items { get; set; } = null!;
 
+    /// <summary>Инициализирует новый экземпляр MarkedList с элементами ListItem</summary>
+    /// <param name="items">Элементы списка</param>
     public MarkedList(params ListItem[] items) : base("ul", [.. items.Cast<HElementBase>()]) { }
 
+    /// <summary>Инициализирует новый экземпляр MarkedList с произвольными элементами</summary>
+    /// <param name="items">Элементы для отображения</param>
     public MarkedList(IEnumerable items) : base("ul") => Items = items;
 
+    /// <summary>Добавить элементы к списку</summary>
+    /// <param name="items">Элементы для добавления</param>
     public void Add(IEnumerable items) => Items = Items?.Concat(items) ?? items;
 
     /// <inheritdoc />

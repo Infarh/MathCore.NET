@@ -7,14 +7,22 @@ using MathCore.NET.Extensions;
 
 namespace MathCore.NET.HTTP.Html;
 
+/// <summary>HTML-элемент ol (нумерованный список)</summary>
 public class NumberedList : TypedElement
 {
+    /// <summary>Элементы для отображения в виде списка</summary>
     private IEnumerable Items { get; set; } = null!;
 
+    /// <summary>Инициализирует новый экземпляр NumberedList с элементами ListItem</summary>
+    /// <param name="items">Элементы списка</param>
     public NumberedList(params ListItem[] items) : base("ol", [.. items.Cast<HElementBase>()]) { }
 
+    /// <summary>Инициализирует новый экземпляр NumberedList с произвольными элементами</summary>
+    /// <param name="items">Элементы для отображения</param>
     public NumberedList(IEnumerable items) : base("ol") => Items = items;
 
+    /// <summary>Добавить элементы к списку</summary>
+    /// <param name="items">Элементы для добавления</param>
     public void Add(IEnumerable items) => Items = Items?.Concat(items) ?? items;
 
     /// <inheritdoc />

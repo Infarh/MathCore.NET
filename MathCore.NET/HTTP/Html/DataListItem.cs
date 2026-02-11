@@ -1,9 +1,12 @@
 ﻿namespace MathCore.NET.HTTP.Html;
 
+/// <summary>Элемент списка определений (dt и dd)</summary>
 public class DataListItem(HElementBase dd, HElementBase dt) : TypedElement("dd")
 {
+    /// <summary>Определение (dd)</summary>
     public HElementBase DD { get; set; } = dd;
 
+    /// <summary>Термин (dt)</summary>
     public HElementBase DT { get; set; } = dt;
 
     /// <inheritdoc />

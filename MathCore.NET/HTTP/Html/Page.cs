@@ -3,15 +3,22 @@ using System.Linq;
 
 namespace MathCore.NET.HTTP.Html;
 
+/// <summary>HTML-страница с head и body элементами</summary>
 public class Page
 {
+    /// <summary>Заголовок (head) страницы</summary>
     private Head _Head = new() { AlwaysOpen = true };
+
+    /// <summary>Тело (body) страницы</summary>
     private Body _Body = new() { AlwaysOpen = true };
 
+    /// <summary>Получить или установить заголовок (head) страницы</summary>
     public Head Head { get => _Head; set => _Head = value ?? []; }
 
+    /// <summary>Получить или установить тело (body) страницы</summary>
     public Body Body { get => _Body; set => _Body = value ?? []; }
 
+    /// <summary>Получить или установить название страницы (заполняет элемент title)</summary>
     public string Title
     {
         get => _Head.Elements.OfType<HElement>().FirstOrDefault(e => e.Name == "title")?.InnerText() ?? "";
