@@ -7,7 +7,7 @@ public class Response : Message
 {
     public int Code { get; set; }
 
-    public string Status { get; set; }
+    public string? Status { get; set; }
 
     public override void Load(StreamReader Reader)
     {
